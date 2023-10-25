@@ -7,7 +7,6 @@ const base_path = process.env.LOGS_DIR_PATH as string
 
 interface Device {
   mac: string
-  chipID?: string
   date?: Date
 }
 
@@ -35,14 +34,12 @@ export default async function handler(
     for (let i = start; i < start + _page_size && i < files.length; i++) {
       const stat = lstat(path.join(base_path, files[i]));
 
-      const [mac, chipID] = files[i]
+      const mac = files[i]
         .replace('.log', '')
         .replace('.pass', '')
-        .split('-')
 
       devices = [...devices, {
         mac,
-        chipID,
         date: (await stat).mtime
       }]
 

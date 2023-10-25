@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { open, rename } from 'node:fs/promises'
+import { FileHandle, open, rename } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 
@@ -10,24 +10,30 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
-  let log_file
+  let log_file: FileHandle | undefined = undefined
   try {
     if (req.method !== 'POST') {
       res.status(400).send('invalid method')
     }
 
-    const { mac, chip_id, pass_number, test_number } = req.headers;
-    const log_path = `${base_path}/${mac}-${chip_id}.log`
-
-    log_file = await open(log_path, 'a+')
-    log_file.write(req.body + '\n')
+    const { mac, pass_number, test_number } = req.headers;
+    let log_path = path.join(String(base_path), `${mac}.log`)
 
     if (pass_number === test_number) {
-      log_file.close()
-      await rename(log_path, log_path + '.pass')
-    } else if (existsSync(log_path + '.pass')) {
+      if (existsSync(log_path))
+        await rename(log_path, log_path + '.pass')
+      log_path = log_path + '.pass'
+    }
+    else if (existsSync(log_path + '.pass')) {
       await rename(log_path + '.pass', log_path)
     }
+    log_file = await open(log_path, 'a+')
+
+    for (let line of String(req.body).split('\n')) {
+      await log_file?.write(`${(new Date()).toISOString()}: ${line}\n`)
+    }
+
+    log_file?.close()
     res.status(200).send('')
   } catch (error) {
     const { message } = error as Error
@@ -35,5 +41,4 @@ export default async function handler(
   } finally {
     log_file?.close()
   }
-
 }
