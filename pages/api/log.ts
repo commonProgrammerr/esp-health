@@ -1,6 +1,8 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { open, rename } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import path from 'node:path'
 
 const base_path = process.env.LOGS_DIR_PATH
 
@@ -23,6 +25,8 @@ export default async function handler(
     if (pass_number === test_number) {
       log_file.close()
       await rename(log_path, log_path + '.pass')
+    } else if (existsSync(log_path + '.pass')) {
+      await rename(log_path + '.pass', log_path)
     }
     res.status(200).send('')
   } catch (error) {

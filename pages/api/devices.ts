@@ -33,7 +33,7 @@ export default async function handler(
     const start = _page * _page_size
 
     for (let i = start; i < start + _page_size && i < files.length; i++) {
-      const stat = lstat(files[i]);
+      const stat = lstat(path.join(base_path, files[i]));
 
       const [mac, chipID] = files[i]
         .replace('.log', '')
