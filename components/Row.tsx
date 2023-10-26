@@ -18,8 +18,8 @@ export function Row({ data }: RowProps) {
   return (
     <div className={styles.row}>
       <span>{mac}</span>
-      <span>{chipid}</span>
       <span>{date_label?.toLocaleString()}</span>
+      <span></span>
       {/* <button>
         <svg
           width="15"

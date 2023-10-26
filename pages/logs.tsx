@@ -18,7 +18,7 @@ interface IDataFech {
 }
 
 export default function Home() {
-  const { data, error } = useFetch<IDataFech>("./api/devices");
+  const { data, error } = useFetch<IDataFech>("./api/logs");
 
   if (error) console.error(error);
 
@@ -32,9 +32,8 @@ export default function Home() {
       <main className={`${styles.main} ${inter.className}`}>
         <div className={styles.head}>
           <span>MAC</span>
+          <span>ChipID</span>
           <span>Data</span>
-          <span></span>
-          {/* <span>ChipID</span> */}
         </div>
         <div className={styles.content}>
           {data?.devices.map((device, index) => (
