@@ -34,7 +34,8 @@ export default async function handler(
     }
 
     log_file?.close()
-    res.status(200).send('')
+    const now = new Date();
+    res.status(200).send(`${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`)
   } catch (error) {
     const { message } = error as Error
     res.status(500).send(message)
