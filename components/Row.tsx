@@ -1,7 +1,9 @@
 import { ReactNode } from "react";
 import styles from "@/styles/Home.module.css";
 import DialogDemo from "./PrintDialog";
-
+import LogDialog from "./LogDialog";
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"] });
 export interface RowProps {
   data: {
     mac?: string;
@@ -16,7 +18,7 @@ export function Row({ data }: RowProps) {
 
   const date_label = date && new Date(date!);
   return (
-    <div className={styles.row}>
+    <div className={`${styles.row} ${inter.className}`}>
       <span>{mac}</span>
       <span>{date_label?.toLocaleString()}</span>
       <span></span>
@@ -36,6 +38,7 @@ export function Row({ data }: RowProps) {
           ></path>
         </svg>
       </button> */}
+      <LogDialog testeId={mac!} />
       <DialogDemo />
     </div>
   );

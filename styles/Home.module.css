@@ -45,9 +45,11 @@
 
 .row > button {
   font-weight: bold;
-  font-size: 1.5rem;
-  border-radius: 0.25rem;
-  padding: 3px 9px;
-  background-color: var(--bg-background-dark);
+  border-radius: 100%;
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-button);
   color: var(--bg-light);
 }

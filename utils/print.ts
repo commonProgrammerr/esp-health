@@ -1,5 +1,7 @@
 import PDFDocument from 'pdfkit';
 import fs from 'node:fs';
+import path from 'node:path'
+const base_path = process.env.PRINTS_DIR_PATH as string
 
 interface PrintOptions {
   fontSize?: number
@@ -9,6 +11,7 @@ interface PrintOptions {
     bottom: number;
     right: number;
   }
+  path?: string
 }
 
 export async function printEti1015(text: string, options?: PrintOptions) {
@@ -44,7 +47,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         compress: true
       });
 
-      const stream = fs.createWriteStream(`${text}.pdf`)
+      const stream = fs.createWriteStream(options?.path || path.join(base_path, text + '.pdf'))
       doc.pipe(stream)
       stream.once('close', resolve)
       stream.once('error', reject)

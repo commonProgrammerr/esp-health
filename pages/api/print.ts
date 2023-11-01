@@ -4,7 +4,7 @@ import { printEti1015 } from '@/utils/print'
 import { existsSync, statSync, createReadStream, rmSync } from 'node:fs';
 import path from 'path'
 
-const base_path = process.env.LOGS_DIR_PATH as string
+const base_path = process.env.PRINTS_DIR_PATH as string
 
 
 export default async function handler(

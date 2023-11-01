@@ -1,4 +1,5 @@
 * {
+  font-family: "Inter" sans-serif;
   box-sizing: border-box;
   padding: 0;
   margin: 0;
@@ -7,7 +8,7 @@
   --border: #8c8273;
   --border-dark-grey: #383d3f;
   --color-black: #000000;
-  --bg-button: #00a688;
+  --bg-button: #003da6;
   --bg-dark-grey: #3b4042;
   --bg-background-dark: #141617;
   --bg-light-grey: #282c2d;
@@ -58,26 +59,26 @@ button {
   -moz-osx-font-smoothing: inherit;
 }
 
-/* ::-webkit-scrollbar {
-  width: 0.75em;
-  height: 0.75em;
-} */
+::-webkit-scrollbar {
+  width: 0.45rem;
+  height: 0.45rem;
+}
 
 /* Track */
-/* ::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   border-radius: 100vh;
   background: none;
   padding: 10px;
-} */
+}
 
 /* Handle */
-/* ::-webkit-scrollbar-thumb {
-  background: #909eb0;
+::-webkit-scrollbar-thumb {
+  background: #edf2f7;
   border-radius: 100vh;
-  border: 2px solid #edf2f7;
-} */
+  border: 2px solid #000;
+}
 
 /* Handle on hover */
-/* ::-webkit-scrollbar-thumb:hover {
-  background: #565f69;
-}  */
+::-webkit-scrollbar-thumb:hover {
+  background: #edf2f7dd;
+}
