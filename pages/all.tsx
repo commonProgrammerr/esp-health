@@ -16,7 +16,11 @@ interface IDataFech {
 }
 
 export default function Home() {
-  const { data, error } = useFetch<IDataFech>("./api/devices");
+  const { data, error } = useFetch<IDataFech>("./api/devices", {
+    headers: {
+      all: true,
+    } as any,
+  });
 
   if (error) console.error(error);
 
@@ -32,8 +36,8 @@ export default function Home() {
           <span>MAC</span>
           <span style={{ alignSelf: "center" }}>Data</span>
           <span>Status</span>
-          <span style={{ backgroundColor: "rgb(39, 39, 39)" }}>
-            <Link href="/all">Todos</Link>
+          <span>
+            <Link href="/">Pass</Link>
           </span>
         </div>
         {data?.devices.map((dv, i) => (

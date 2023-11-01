@@ -57,7 +57,7 @@ export default function LogDialog({ testeId }: LogDialogProps) {
               Device log
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className="IconButton" aria-label="Close">
+              <button className={styles.IconButton} aria-label="Close">
                 <Cross2Icon />
               </button>
             </Dialog.Close>
@@ -65,10 +65,13 @@ export default function LogDialog({ testeId }: LogDialogProps) {
           <Dialog.Description
             className={styles.DialogLogView}
             style={inter.style}
+            asChild
           >
-            {logs.split("\n").map((line, i) => (
-              <span key={`${line}@${i}`}>{line}</span>
-            ))}
+            <code>
+              {logs.split("\n").map((line, i) => (
+                <code key={`${line}@${i}`}>{line}</code>
+              ))}
+            </code>
           </Dialog.Description>
         </Dialog.Content>
       </Dialog.Portal>
