@@ -19,9 +19,9 @@ export async function printEti1015(text: string, options?: PrintOptions) {
   // const fontSize = options?.fontSize || 120 // relation: 120 -> [20.04,121.6]
   // const fontWidth = fontSize * 0.167
   // const fontHeight = fontSize * 1.013333333
-  const fontSize = options?.fontSize || 120 // relation: 120 -> [20.04,121.6]
-  const legenda_size = fontSize * .2
-  const title_size = fontSize * .15
+  const fontSize = options?.fontSize || 48 // relation: 120 -> [20.04,121.6]
+  const legenda_size = fontSize * .333333333
+  const title_size = fontSize * .291666667
 
   const fontWidth = fontSize * 0.33
   const fontHeight = fontSize * 1.084
@@ -53,7 +53,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
       stream.once('error', reject)
 
       doc
-        .font('Helvetica-Bold')
+        .font('./fonts/calibri/bold.ttf')
         .fontSize(title_size)
         .text('DeviceID', 0, margins.top, {
           width: doc_width,
@@ -61,7 +61,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         })
 
       doc
-        .font('Helvetica')
+        .font('./fonts/calibri/regular.ttf')
         .fontSize(legenda_size)
         .text(text, 0, legenda_top, {
           width: doc_width,
@@ -69,7 +69,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         })
 
       //codebar
-      doc.font("./fonts/LibreBarcode128-Regular.ttf")
+      doc.font("./fonts/code128.ttf")
         .fontSize(fontSize)
         .text(text, 0, barcode_top, {
           width: doc_width,
