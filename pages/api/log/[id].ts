@@ -29,8 +29,10 @@ export default async function Handler(
       console.log(`A client connected. ID: ${clientId}`);
       io.emit("client-new", clientId);
 
-      exec(`tail -n 3 ${filePath}`, (error, stdout, stderr) => {
-        socket.emit('line', stdout)
+      exec(`tail -n 10 ${filePath}`, (error, stdout, stderr) => {
+        stdout.split('\n').forEach(line =>
+          socket.emit('line', stdout)
+        )
         // if (stderr || error)
         //   console.error(stderr, error)
       })
