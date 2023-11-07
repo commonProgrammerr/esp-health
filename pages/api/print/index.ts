@@ -17,16 +17,13 @@ export default async function handler(
 
 
     const id = url.searchParams.get("id")
-    const size = url.searchParams.get("size")
     if (!existsSync(path.resolve(logs_base_path, `${id}.log.pass`)))
       return res.status(403).end()
 
     const filePath = path.resolve(base_path, `${id}.pdf`)
 
     if (!existsSync(filePath))
-      await printEti1015(id!, size ? {
-        fontSize: Number(size)
-      } : undefined)
+      await printEti1015(id!)
 
     const stat = statSync(filePath)
     res.writeHead(200, {

@@ -72,6 +72,45 @@ export async function printEti1015(text: string, options?: PrintOptions) {
           align: 'center',
         })
 
+      doc.addPage({
+        size: [doc_width, doc_heigth]
+      }).moveTo(20, 0)
+        .lineTo(20, doc_heigth)
+        //
+        .moveTo(0, 25)
+        .lineTo(doc_width, 25)
+        //
+        .moveTo((doc_width / 2.25), 0)
+        .lineTo((doc_width / 2.25), doc_heigth)
+        //
+        .moveTo(0, doc_heigth - 25)
+        .lineTo(doc_width, doc_heigth - 25)
+        .stroke()
+        .font('./fonts/calibri/bold.ttf')
+        .fontSize(title_size / 2)
+        .text('DeviceID', 10, 50, {
+          width: (doc_width / 2.25),
+          height: doc_heigth,
+          align: 'center',
+          baseline: 'bottom'
+        })
+        .font('./fonts/calibri/regular.ttf')
+        .fontSize(legenda_size / 2)
+        .text(text, 10, doc_heigth / 2, {
+          width: (doc_width / 2.25),
+          height: 20,
+          align: 'center',
+          baseline: 'middle'
+        })
+
+      // doc
+      //   .font('./fonts/calibri/regular.ttf')
+      //   .fontSize(legenda_size)
+      //   .text(text, 0, legenda_top, {
+      //     width: doc_width,
+      //     align: 'center',
+      //   })
+
       doc.end();
 
     } catch (error) {

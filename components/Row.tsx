@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DownloadIcon } from "@radix-ui/react-icons";
 import { PrintIcon } from "./PrintIcon";
 import { StatusTypes } from "@/utils/enums";
+import { formatDate } from "@/utils/formatDate";
 
 export interface RowProps {
   data: {

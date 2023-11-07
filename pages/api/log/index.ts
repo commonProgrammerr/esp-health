@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { FileHandle, open, rename } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
+import { formatDate } from '@/utils/formatDate'
 
 const base_path = process.env.LOGS_DIR_PATH
 
