@@ -32,6 +32,8 @@ export async function printEti1015(text: string, options?: PrintOptions) {
 
   const doc_width = (margins.left * 2) + (text.length * fontWidth)
   const doc_heigth = (margins.bottom * 2) + fontHeight + legenda_size + title_size - (fontSize * 0.275)
+  const minor_width = doc_width / 3
+  const minor_heigth = doc_heigth / 2
 
   return new Promise((resolve, reject) => {
     try {
@@ -74,31 +76,40 @@ export async function printEti1015(text: string, options?: PrintOptions) {
 
       doc.addPage({
         size: [doc_width, doc_heigth]
-      }).moveTo(0, doc_heigth / 2)
+      })
+        .moveTo(0, 10)
+        .lineTo(doc_width, 10)
+        //
+        .moveTo(0, doc_heigth - 10)
+        .lineTo(doc_width, doc_heigth - 10)
+        //
+        .moveTo(0, doc_heigth / 2)
         .lineTo(doc_width, doc_heigth / 2)
         //
         .moveTo(doc_width / 3, 0)
         .lineTo(doc_width / 3, doc_heigth)
         //
-        .moveTo(2 * (doc_width / 3), 0)
-        .lineTo(2 * (doc_width / 3), doc_heigth)
+        .moveTo(2 * minor_width, 0)
+        .lineTo(2 * minor_width, doc_heigth)
         .stroke()
       for (let j = 0; j < 2; j++) {
         for (let i = 0; i < 3; i++) {
+          const text_line = (j * minor_heigth) + (minor_heigth / 2) + (j ? -5 : 5)
+          const text_start = (i * minor_width)
           doc.font('./fonts/calibri/bold.ttf')
             .fontSize(title_size / 2)
-            .text('DeviceID', (i * (doc_width / 3)), (j * doc_heigth / 2) + (doc_heigth / 4) - 12, {
-              width: (doc_width / 3),
+            .text('DeviceID', text_start, text_line, {
+              width: minor_width,
+              height: 20,
+              align: 'center',
+              baseline: 'bottom'
+            }).font('./fonts/calibri/regular.ttf')
+            .fontSize(legenda_size / 2)
+            .text(text, text_start, text_line, {
+              width: minor_width,
               height: 20,
               align: 'center',
               baseline: 'top'
-            }).font('./fonts/calibri/regular.ttf')
-            .fontSize(legenda_size / 2)
-            .text(text, (i * (doc_width / 3)), (j * doc_heigth / 2) + (doc_heigth / 4), {
-              width: (doc_width / 3),
-              height: 20,
-              align: 'center',
-              baseline: 'middle'
             })
         }
       }
