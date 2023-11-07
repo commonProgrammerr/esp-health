@@ -1,60 +1,53 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { findFile } from '@/utils/findFile';
+import type { IDevicesRequest, IDevicesResponse } from '@/types';
+import { StatusTypes } from '@/utils/enums';
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { existsSync } from 'node:fs';
-import { lstat, readdir } from 'node:fs/promises';
+import { existsSync, lstatSync } from 'node:fs';
+import { readdir } from 'node:fs/promises';
 import path from 'path';
 
 const base_path = process.env.LOGS_DIR_PATH as string
 const pdf_base_path = process.env.LOGS_DIR_PATH as string
 
-interface Device {
-  mac: string
-  date?: Date
-  status: string
-}
-
-interface Data {
-  date: string
-  devices: Device[]
-}
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Data | Error>
+  res: NextApiResponse<IDevicesResponse | Error>
 ) {
   try {
 
-    let devices: Device[] = []
     const {
-      page,
+      page_number,
       page_size,
-      all
-    } = req.headers
-    const _page = page ? (Number(page) - 1) : 0
-    const _page_size = page_size ? Number(page_size) : 10
-    const files = (await readdir(base_path)).filter(file => all || file.endsWith('.pass'));
-    const start = _page * _page_size
+      filter
+    } = req.body as IDevicesRequest
 
-    for (let i = start; i < start + _page_size && i < files.length; i++) {
-      const mac = files[i]
+    const devices = (await readdir(base_path)).map(file => {
+
+      const log_path = path.join(base_path, file)
+      const stat = lstatSync(log_path);
+      const isPass = file.endsWith('.pass')
+      if (filter?.pass_only && !isPass)
+        return false
+
+      const mac = file
         .replace('.log', '')
         .replace('.pass', '')
-
-      const log_path = path.join(base_path, files[i])
       const pdf_path = path.join(pdf_base_path, mac + '.pdf')
-      const stat = lstat(log_path);
 
+      const status = isPass ? existsSync(pdf_path) ? StatusTypes.OK : StatusTypes.PRINTED : StatusTypes.FAIL
 
-      const status = files[i].includes('.pass') ? existsSync(pdf_path) ? 'OK' : 'Impresso' : 'Defeito'
+      if ((filter?.nstatus && status === filter.status) || (filter?.status && filter?.status !== status))
+        return false
 
-      devices = [...devices, {
+      return {
         mac,
-        date: (await stat).mtime,
+        date: stat.mtime,
         status
-      }]
+      }
 
-    };
+
+    }).filter(Boolean) as any;
 
     res.status(200).json({
       devices,

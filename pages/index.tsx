@@ -1,22 +1,32 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { Row } from "@/components/Row";
-import { useFetch } from "@/hooks/useFetch";
-import Link from "next/link";
+import { api } from "@/utils/api";
+import { useAsyncFn, useEffectOnce } from "react-use";
+import type { IDevicesFilter, IDevicesResponse } from "@/types";
+import Image from "next/image";
+import { StatusTypes } from "@/utils/enums";
+import logo_image from "@/public/logo.png";
+import { Select } from "@/components/Select";
+import { useEffect, useState } from "react";
 
-interface IDataFech {
-  devices: [
-    {
-      mac: string;
-      status: string;
-      date: string;
-    }
-  ];
-  date: Date;
-}
+const filters = Object.values(StatusTypes);
 
 export default function Home() {
-  const { data, error } = useFetch<IDataFech>("./api/devices");
+  const [filter, setFilter] = useState(StatusTypes.OK);
+
+  const [{ loading, error, value }, reload] = useAsyncFn(
+    async (filter: IDevicesFilter) => {
+      return api.post<IDevicesResponse>("/devices", {
+        filter,
+      });
+    },
+    []
+  );
+
+  useEffect(() => {
+    reload(filter ? { status: filter } : {});
+  }, [filter, reload]);
 
   if (error) console.error(error);
 
@@ -29,14 +39,24 @@ export default function Home() {
       </Head>
       <main className={styles.main}>
         <div className={styles.head}>
-          <span>MAC</span>
-          <span style={{ alignSelf: "center" }}>Data</span>
-          <span>Status</span>
-          <span style={{ backgroundColor: "rgb(39, 39, 39)" }}>
-            <Link href="/all">Todos</Link>
+          <span id="logo_container">
+            <Image
+              src={logo_image}
+              alt="logo"
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
+            />
           </span>
+          <span>MAC</span>
+          <span>Data</span>
+          <span>Status</span>
+          <div>
+            <Select value={filter} options={filters} onChange={setFilter} />
+          </div>
         </div>
-        {data?.devices.map((dv, i) => (
+        {value?.data.devices.map((dv, i) => (
           <Row key={i} data={dv} />
         ))}
       </main>

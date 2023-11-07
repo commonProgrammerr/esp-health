@@ -17,7 +17,9 @@ export default async function Handler(
       res.end();
       return;
     }
-    const [id] = await findFile(String(req.query.id), base_path)
+    const ids = await findFile(String(req.query.id), base_path)
+    const [id] = ids
+    console.log(req.query.id, ids, id)
     const filePath = id && path.join(base_path, id)
 
     const io = new Server(res.socket.server)

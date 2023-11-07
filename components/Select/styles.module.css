@@ -1,0 +1,112 @@
+.Container {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  position: relative;
+  align-items: stretch;
+  min-width: 220px;
+  z-index: 200;
+  color: #000a;
+  overflow: hidden;
+}
+.Label {
+  margin-bottom: 6px;
+  color: currentColor;
+  font-size: 0.875rem;
+  line-height: 1.0675rem;
+  font-weight: 400;
+}
+
+.Trigger {
+  all: unset;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  max-height: 31px;
+  padding: 4.5px 16px;
+  border-radius: 4px;
+  gap: 5px;
+  background-color: white;
+  color: currentColor;
+  font-size: 0.875rem;
+  font-weight: 400;
+  border: 1px solid #a3a3a3;
+}
+
+.Trigger > span:first-child {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+}
+
+.Trigger > :disabled {
+  background-color: #e5e5e5;
+}
+
+.Trigger:focus {
+  border-color: #2980b9;
+}
+
+.Content {
+  overflow: hidden;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0px 10px 38px -10px rgba(22, 23, 24, 0.35),
+    0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+}
+
+.Viewport {
+  padding: 5px;
+}
+
+.Item {
+  all: unset;
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: currentColor;
+
+  border-radius: 3px;
+  min-height: 1.5rem;
+  padding: 8px 35px 8px 25px;
+
+  position: relative;
+  user-select: none;
+}
+
+.Item[data-disabled] {
+  color: currentColor;
+  pointer-events: none;
+}
+
+.Item:focus {
+  background-color: #dadada;
+}
+
+.ItemIndicator {
+  position: absolute;
+  left: 0px;
+  width: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scrollButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  background-color: white;
+  color: currentColor;
+  cursor: default;
+}
+
+.ItemText {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+}
