@@ -74,48 +74,34 @@ export async function printEti1015(text: string, options?: PrintOptions) {
 
       doc.addPage({
         size: [doc_width, doc_heigth]
-      }).moveTo(20, 0)
-        .lineTo(20, doc_heigth)
+      }).moveTo(0, doc_heigth / 2)
+        .lineTo(doc_width, doc_heigth / 2)
         //
-        .moveTo(0, 30)
-        .lineTo(doc_width, 30)
+        .moveTo(doc_width / 3, 0)
+        .lineTo(doc_width / 3, doc_heigth)
         //
-        .moveTo((doc_width / 2.5), 0)
-        .lineTo((doc_width / 2.5), doc_heigth)
-        .moveTo(150, 0)
-        .lineTo(150, doc_heigth)
-        //
-        .moveTo(0, doc_heigth - 30)
-        .lineTo(doc_width, doc_heigth - 30)
+        .moveTo(2 * (doc_width / 3), 0)
+        .lineTo(2 * (doc_width / 3), doc_heigth)
         .stroke()
-        .font('./fonts/calibri/bold.ttf')
-        .fontSize(title_size / 2)
-        .text('DeviceID', 10, 50, {
-          width: (doc_width / 2.25),
-          height: doc_heigth,
-          align: 'center',
-          baseline: 'bottom'
-        })
-        .text('DeviceID', 70, 50, {
-          width: (doc_width / 2.25),
-          height: doc_heigth,
-          align: 'center',
-          baseline: 'bottom'
-        })
-        .font('./fonts/calibri/regular.ttf')
-        .fontSize(legenda_size / 2)
-        .text(text, 5, doc_heigth / 2, {
-          width: (doc_width / 2.25),
-          height: 20,
-          align: 'center',
-          baseline: 'middle'
-        })
-        .text(text, 70, doc_heigth / 2, {
-          width: (doc_width / 2.25),
-          height: 20,
-          align: 'center',
-          baseline: 'middle'
-        })
+      for (let j = 0; j < 2; j++) {
+        for (let i = 0; i < 3; i++) {
+          doc.font('./fonts/calibri/bold.ttf')
+            .fontSize(title_size / 2)
+            .text('DeviceID', (i * (doc_width / 3)), (j * doc_heigth / 2) + (doc_heigth / 4) - 12, {
+              width: (doc_width / 3),
+              height: 20,
+              align: 'center',
+              baseline: 'top'
+            }).font('./fonts/calibri/regular.ttf')
+            .fontSize(legenda_size / 2)
+            .text(text, (i * (doc_width / 3)), (j * doc_heigth / 2) + (doc_heigth / 4), {
+              width: (doc_width / 3),
+              height: 20,
+              align: 'center',
+              baseline: 'middle'
+            })
+        }
+      }
 
       doc.end();
 
