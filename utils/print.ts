@@ -82,6 +82,8 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         //
         .moveTo((doc_width / 2.5), 0)
         .lineTo((doc_width / 2.5), doc_heigth)
+        .moveTo(150, 0)
+        .lineTo(150, doc_heigth)
         //
         .moveTo(0, doc_heigth - 30)
         .lineTo(doc_width, doc_heigth - 30)
@@ -94,9 +96,21 @@ export async function printEti1015(text: string, options?: PrintOptions) {
           align: 'center',
           baseline: 'bottom'
         })
+        .text('DeviceID', 70, 50, {
+          width: (doc_width / 2.25),
+          height: doc_heigth,
+          align: 'center',
+          baseline: 'bottom'
+        })
         .font('./fonts/calibri/regular.ttf')
         .fontSize(legenda_size / 2)
-        .text(text, 10, doc_heigth / 2, {
+        .text(text, 5, doc_heigth / 2, {
+          width: (doc_width / 2.25),
+          height: 20,
+          align: 'center',
+          baseline: 'middle'
+        })
+        .text(text, 70, doc_heigth / 2, {
           width: (doc_width / 2.25),
           height: 20,
           align: 'center',
