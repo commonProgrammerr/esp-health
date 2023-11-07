@@ -7,7 +7,7 @@ import { readdir } from 'node:fs/promises';
 import path from 'path';
 
 const base_path = process.env.LOGS_DIR_PATH as string
-const pdf_base_path = process.env.LOGS_DIR_PATH as string
+const pdf_base_path = process.env.PRINTS_DIR_PATH as string
 
 
 export default async function handler(
