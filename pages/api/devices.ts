@@ -35,7 +35,7 @@ export default async function handler(
         .replace('.pass', '')
       const pdf_path = path.join(pdf_base_path, mac + '.pdf')
 
-      const status = isPass ? existsSync(pdf_path) ? StatusTypes.OK : StatusTypes.PRINTED : StatusTypes.FAIL
+      const status = isPass ? existsSync(pdf_path) ? StatusTypes.PRINTED : StatusTypes.OK : StatusTypes.FAIL
 
       if ((filter?.nstatus && status === filter.status) || (filter?.status && filter?.status !== status))
         return false
