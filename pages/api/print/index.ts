@@ -5,7 +5,7 @@ import { existsSync, statSync, createReadStream, rmSync } from 'node:fs';
 import path from 'path'
 
 const base_path = process.env.PRINTS_DIR_PATH as string
-const logs_base_path = process.env.PRINTS_DIR_PATH as string
+const logs_base_path = process.env.LOGS_DIR_PATH as string
 
 
 export default async function handler(
@@ -14,7 +14,6 @@ export default async function handler(
 ) {
   try {
     const url = new URL(`localhost:3000${req.url}`)
-
 
     const id = url.searchParams.get("id")
     if (!existsSync(path.resolve(logs_base_path, `${id}.log.pass`)))

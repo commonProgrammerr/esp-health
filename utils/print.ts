@@ -77,14 +77,14 @@ export async function printEti1015(text: string, options?: PrintOptions) {
       }).moveTo(20, 0)
         .lineTo(20, doc_heigth)
         //
-        .moveTo(0, 25)
-        .lineTo(doc_width, 25)
+        .moveTo(0, 30)
+        .lineTo(doc_width, 30)
         //
-        .moveTo((doc_width / 2.25), 0)
-        .lineTo((doc_width / 2.25), doc_heigth)
+        .moveTo((doc_width / 2.5), 0)
+        .lineTo((doc_width / 2.5), doc_heigth)
         //
-        .moveTo(0, doc_heigth - 25)
-        .lineTo(doc_width, doc_heigth - 25)
+        .moveTo(0, doc_heigth - 30)
+        .lineTo(doc_width, doc_heigth - 30)
         .stroke()
         .font('./fonts/calibri/bold.ttf')
         .fontSize(title_size / 2)
@@ -102,14 +102,6 @@ export async function printEti1015(text: string, options?: PrintOptions) {
           align: 'center',
           baseline: 'middle'
         })
-
-      // doc
-      //   .font('./fonts/calibri/regular.ttf')
-      //   .fontSize(legenda_size)
-      //   .text(text, 0, legenda_top, {
-      //     width: doc_width,
-      //     align: 'center',
-      //   })
 
       doc.end();
 
