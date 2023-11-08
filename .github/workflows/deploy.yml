@@ -1,9 +1,5 @@
 name: Deploy para o server
 run-name: Fazendo o deploy em produção
-on:
-  push:
-    branches:
-      - main
 
 jobs:
   update-api:
@@ -17,7 +13,10 @@ jobs:
           sudo apt install -y openfortivpn
       - name: Connect to VPN
         run: |
-          sudo openfortivpn ${{ secrets.VPN }}:${{secrets.PORT}} -u ${{ secrets.USER }} -p ${{ secrets.PASSWORD }} --trusted-cert ${{ secrets.VPN_CERT }}
+          sudo openfortivpn ${{ secrets.VPN }}:${{secrets.PORT}} -u ${{ secrets.USER }} -p ${{ secrets.PASSWORD }} --trusted-cert ${{ secrets.VPN_CERT }} &
+      - name: Test if connected to VPN
+        run: |
+          ping -c40 ${{ secrets.HOST }}
       - uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST }}
