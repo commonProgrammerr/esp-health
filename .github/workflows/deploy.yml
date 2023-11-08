@@ -17,7 +17,7 @@ jobs:
           sudo apt install -y openfortivpn
       - name: Connect to VPN
         run: |
-          sudo openfortivpn ${{ secrets.VPN }}:${{secrets.PORT}} -u ${{ secrets.USER }} -p ${{ secrets.PASSWORD }}
+          sudo openfortivpn ${{ secrets.VPN }}:${{secrets.PORT}} -u ${{ secrets.USER }} -p ${{ secrets.PASSWORD }} --trusted-cert ${{ secrets.VPN_CERT }}
       - uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST }}
