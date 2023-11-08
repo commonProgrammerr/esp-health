@@ -1,0 +1,32 @@
+name: Deploy para o server
+run-name: Fazendo o deploy em produção
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-api:
+    name: Atualizar API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install VPN
+        run: |
+          sudo apt update
+          sudo apt install -y openfortivpn
+      - name: Connect to VPN
+        run: |
+          sudo openfortivpn ${{ secrets.VPN }}:${{secrets.PORT}} -u ${{ secrets.USER }} -p ${{ secrets.PASSWORD }}
+      - uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd /home/${{ secrets.USERNAME }}/esp-helth
+            git fetch && git pull
+            yarn
+            yarn build
+            systemctl restart helth-server
+          script_stop: true
