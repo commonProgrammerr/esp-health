@@ -1,0 +1,34 @@
+.container {
+  display: grid;
+  grid-template-columns: 7vw repeat(4, 1fr);
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem 1rem;
+}
+
+.container > * {
+  text-align: center;
+}
+
+.container:nth-child(odd) {
+  background: rgba(204, 204, 204, 0.68);
+}
+
+.row_action {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  padding-right: 3.5vw;
+}
+
+.row_action > a,
+.row_action > button {
+  font-weight: bold;
+  border-radius: 100%;
+  padding: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2980b9;
+  color: var(--bg-light);
+}

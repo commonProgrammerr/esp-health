@@ -1,40 +1,48 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest } from "next";
-import { Server } from 'socket.io'
-import path from "node:path";
 import Tail from '@logdna/tail-file'
+import path from "node:path";
+
+import { Server } from 'socket.io'
 import { exec } from "node:child_process";
 import { findFile } from "@/utils/findFile";
+import type { NextApiRequest, NextApiResponse } from "next";
 
 const base_path = process.env.LOGS_DIR_PATH as string;
 
+let _server: any
+
 export default async function Handler(
   req: NextApiRequest,
-  res: any
+  res: NextApiResponse<any>
 ) {
   try {
-    if (res.socket.server.io) {
+    const { server } = res.socket as any
+
+    if (server?.io) {
       res.end();
       return;
     }
+
     const ids = await findFile(String(req.query.id), base_path)
     const [id] = ids
-    console.log(req.query.id, ids, id)
     const filePath = id && path.join(base_path, id)
+    _server = server
+    const io = new Server(server)
 
-    const io = new Server(res.socket.server)
+    console.log(req.query.id, ids, id)
+
     io.on("connection", (socket) => {
       const clientId = socket.id;
 
       console.log(`A client connected. ID: ${clientId}`);
-      io.emit("client-new", clientId);
+      socket.emit("client-new", clientId);
 
       exec(`tail -n 10 ${filePath}`, (error, stdout, stderr) => {
+        if (stderr || error)
+          console.error(stderr, error)
+
         stdout.split('\n').forEach(line =>
-          socket.emit('line', stdout)
+          socket.emit('line', line + '\n')
         )
-        // if (stderr || error)
-        //   console.error(stderr, error)
       })
 
       const tail = new Tail(filePath)
@@ -46,23 +54,31 @@ export default async function Handler(
           res.status(500).send(message);
         })
         .then(() => {
-          tail.on('truncated', data => console.log(data))
-          tail.on('data', (data: Buffer) => {
+
+          tail?.on('truncated', data => console.log(data))
+          tail?.on('data', (data: Buffer) => {
             const text = data.toString('utf-8')
             console.log(text)
             socket.emit('line', text)
           })
 
+
           socket.on("disconnect", () => {
             console.log("A client disconnected.");
-            tail.quit()
+            tail?.quit()
+            tail?.emit('close')
+            if (_server) {
+              delete _server.io
+              _server = undefined
+            }
           });
         })
+
     });
 
-    res.socket.server.io = io;
-    res.end();
+    server.io = io;
 
+    res.end()
   } catch (error) {
     const { message } = error as Error;
     res.status(500).send(message);

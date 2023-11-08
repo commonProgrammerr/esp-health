@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import styles from "@/styles/dialog.module.css";
 import { Cross2Icon, EyeOpenIcon } from "@radix-ui/react-icons";
@@ -15,34 +15,49 @@ interface LogDialogProps {
 
 export default function LogDialog({ testeId }: LogDialogProps) {
   const [logs, setLogs] = useState("");
-  const ref = useRef<Socket | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const dialogHandle = (isOpen: boolean) => {
+  const ref = useRef<Socket | null>(null);
+  const handleOpenDialog = useCallback(
+    () => setIsOpen((op) => !op),
+    [setIsOpen]
+  );
+
+  useEffect(() => {
+    console.log(isOpen, ref.current);
     if (isOpen) {
       if (ref.current) return;
+
       fetch(`/api/log/${testeId}`);
       ref.current = io();
 
       ref.current.on("connect", () => console.log("connected"));
       ref.current.on("client-new", (id) => console.log("client-id:", id));
       ref.current.on("line", (msg) => setLogs((logs) => logs + msg));
-    } else if (ref.current) {
-      setLogs("");
-      ref.current?.disconnect();
-      ref.current?.close();
-      ref.current = null;
+    } else {
+      if (ref.current) {
+        ref.current.disconnect();
+        ref.current.close();
+        ref.current = null;
+      }
+      setLogs(() => {
+        return "";
+      });
     }
-  };
+  }, [isOpen, testeId]);
 
   return (
-    <Dialog.Root onOpenChange={dialogHandle}>
+    <Dialog.Root open={isOpen}>
       <Dialog.Trigger asChild>
-        <button>
+        <button onClick={handleOpenDialog}>
           <EyeOpenIcon />
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className={styles.DialogOverlay} />
+        <Dialog.Overlay
+          onClick={handleOpenDialog}
+          className={styles.DialogOverlay}
+        />
         <Dialog.Content className={styles.DialogContent}>
           <div
             style={{
@@ -51,10 +66,14 @@ export default function LogDialog({ testeId }: LogDialogProps) {
             }}
           >
             <Dialog.Title className={styles.DialogTitle}>
-              Device log
+              Dispositivo {testeId}
             </Dialog.Title>
             <Dialog.Close asChild>
-              <button className={styles.IconButton} aria-label="Close">
+              <button
+                onClick={handleOpenDialog}
+                className={styles.IconButton}
+                aria-label="Close"
+              >
                 <Cross2Icon />
               </button>
             </Dialog.Close>

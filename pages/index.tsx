@@ -8,12 +8,14 @@ import Image from "next/image";
 import { StatusTypes } from "@/utils/enums";
 import logo_image from "@/public/logo.png";
 import { Select } from "@/components/Select";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 const filters = Object.values(StatusTypes);
 
 export default function Home() {
-  const [filter, setFilter] = useState(StatusTypes.OK);
+  const router = useRouter();
+  const filter = router.query.filter?.toString();
 
   const [{ loading, error, value }, reload] = useAsyncFn(
     async (filter: IDevicesFilter) => {
@@ -26,7 +28,7 @@ export default function Home() {
 
   useEffect(() => {
     reload(filter ? { status: filter } : {});
-  }, [filter, reload]);
+  }, [router.query]);
 
   if (error) console.error(error);
 
@@ -53,7 +55,16 @@ export default function Home() {
           <span>Data</span>
           <span>Status</span>
           <div>
-            <Select value={filter} options={filters} onChange={setFilter} />
+            <Select
+              value={filter}
+              options={filters}
+              placeholder="Todos"
+              onChange={(value) => {
+                router.query.filter = value;
+                router.push(router);
+                reload(value ? { status: value } : {});
+              }}
+            />
           </div>
         </div>
         {value?.data.devices.map((dv, i) => (

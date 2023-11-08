@@ -1,4 +1,3 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { IDevicesRequest, IDevicesResponse } from '@/types';
 import { StatusTypes } from '@/utils/enums';
 import type { NextApiRequest, NextApiResponse } from 'next'
@@ -45,9 +44,7 @@ export default async function handler(
         date: stat.mtime,
         status
       }
-
-
-    }).filter(Boolean) as any;
+    }).filter(Boolean).sort((a: any, b: any) => b.date - a.date) as any;
 
     res.status(200).json({
       devices,
