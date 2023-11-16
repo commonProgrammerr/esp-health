@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 import fs from 'node:fs';
 import path from 'node:path'
+import Encoder from 'code-128-encoder'
 const base_path = process.env.PRINTS_DIR_PATH as string
 
 interface PrintOptions {
@@ -14,11 +15,12 @@ interface PrintOptions {
   path?: string
 }
 
-const fontSize = 48 // relation: 120 -> [20.04,121.6]
+const encoder = new Encoder()
+const fontSize = 52 // relation: 120 -> [20.04,121.6]
 const legenda_size = fontSize * .333333333
 const title_size = fontSize * .291666667
 
-const fontWidth = fontSize * 0.33
+const fontWidth = fontSize * 0.42
 const fontHeight = fontSize * 1.45
 
 const margins = {
@@ -29,11 +31,10 @@ const barcode_top = margins.top + title_size
 const legenda_top = barcode_top + fontHeight - (fontSize * 0.4)
 
 export async function printEti1015(text: string, options?: PrintOptions) {
-
-  const doc_width = (margins.left * 2) + (text.length * fontWidth)
-  const doc_heigth = (margins.bottom * 2) + fontHeight + legenda_size + title_size - (fontSize * 0.275)
-  const minor_width = doc_width / 3
-  const minor_heigth = doc_heigth / 2
+  const encoded_text = encoder.encode(text)
+  const doc_width = (encoded_text.length * fontWidth)
+  const doc_heigth = doc_width / 2.5
+  const minor_width = doc_width / 3.5
 
   return new Promise((resolve, reject) => {
     try {
@@ -53,8 +54,9 @@ export async function printEti1015(text: string, options?: PrintOptions) {
       doc
         .font('./fonts/calibri/bold.ttf')
         .fontSize(title_size)
-        .text('DeviceID', 0, margins.top, {
+        .text('DeviceID', 0, margins.top + 5, {
           width: doc_width,
+          height: 20,
           align: 'center'
         })
 
@@ -69,49 +71,50 @@ export async function printEti1015(text: string, options?: PrintOptions) {
       //codebar
       doc.font("./fonts/code128.ttf")
         .fontSize(fontSize)
-        .text(text, 0, barcode_top, {
+        .text(encoded_text, 0, barcode_top, {
           width: doc_width,
+          height: 20,
           align: 'center',
         })
 
       doc.addPage({
         size: [doc_width, doc_heigth]
       })
-        .moveTo(0, 10)
-        .lineTo(doc_width, 10)
-        //
-        .moveTo(0, doc_heigth - 10)
-        .lineTo(doc_width, doc_heigth - 10)
-        //
-        .moveTo(0, doc_heigth / 2)
-        .lineTo(doc_width, doc_heigth / 2)
-        //
-        .moveTo(doc_width / 3, 0)
-        .lineTo(doc_width / 3, doc_heigth)
-        //
+        .moveTo(0, doc_heigth / 5)
+        .lineTo(doc_width, doc_heigth / 5)
+        .moveTo(0, doc_heigth - (doc_heigth / 5))
+        .lineTo(doc_width, doc_heigth - (doc_heigth / 5))
+
+        .moveTo(0.79, 0)
+        .lineTo(0.79, doc_heigth)
+
+        .moveTo(minor_width, 0)
+        .lineTo(minor_width, doc_heigth)
+
         .moveTo(2 * minor_width, 0)
         .lineTo(2 * minor_width, doc_heigth)
+        .moveTo(3 * minor_width, 0)
+        .lineTo(3 * minor_width, doc_heigth)
         .stroke()
-      for (let j = 0; j < 2; j++) {
-        for (let i = 0; i < 3; i++) {
-          const text_line = (j * minor_heigth) + (minor_heigth / 2) + (j ? -5 : 5)
-          const text_start = (i * minor_width)
-          doc.font('./fonts/calibri/bold.ttf')
-            .fontSize(title_size / 2)
-            .text('DeviceID', text_start, text_line, {
-              width: minor_width,
-              height: 20,
-              align: 'center',
-              baseline: 'bottom'
-            }).font('./fonts/calibri/regular.ttf')
-            .fontSize(legenda_size / 2)
-            .text(text, text_start, text_line, {
-              width: minor_width,
-              height: 20,
-              align: 'center',
-              baseline: 'top'
-            })
-        }
+
+      for (let i = 0; i < 3; i++) {
+        const text_line = doc_heigth / 2
+        const text_start = (i * minor_width)
+        doc.font('./fonts/calibri/bold.ttf')
+          .fontSize(title_size / 1.5)
+          .text('DeviceID', text_start, text_line - 1.25, {
+            width: minor_width,
+            height: 20,
+            align: 'center',
+            baseline: 'bottom'
+          })
+          .fontSize(legenda_size / 1.5)
+          .text(text, text_start, text_line + 1.25, {
+            width: minor_width,
+            height: 20,
+            align: 'center',
+            baseline: 'top'
+          })
       }
 
       doc.end();
