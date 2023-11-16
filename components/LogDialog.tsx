@@ -6,6 +6,7 @@ import { Inter } from "next/font/google";
 
 import { useRef, useState } from "react";
 import io, { Socket } from "socket.io-client";
+import moment from "moment";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -84,13 +85,30 @@ export default function LogDialog({ testeId }: LogDialogProps) {
             asChild
           >
             <code>
-              {logs.split("\n").map((line, i) => (
-                <code key={`${line}@${i}`}>{line}</code>
-              ))}
+              {logs
+                .split("\n")
+                .map(
+                  (line, i) => line && <Line key={`${line}@${i}`} line={line} />
+                )}
             </code>
           </Dialog.Description>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+function Line({ line }: any) {
+  const date = moment(line.slice(0, 19), "DD-MM-YYYY HH:mm:ss").toDate();
+  date.setTime(date.getTime() - date.getTimezoneOffset() * 60 * 1000); // data atual - 3h
+  const log = line.slice(19);
+
+  return (
+    line && (
+      <code>
+        {moment(date.toISOString()).format("DD-MM-YYYY HH:mm:ss")}
+        {log}
+      </code>
+    )
   );
 }
