@@ -1,0 +1,11 @@
+{
+  "watch": [
+    "./public",
+    "./src/entities",
+    "./src/data-source.ts",
+    "./src/server.ts"
+  ],
+  "ext": ".ts,.js",
+  "ignore": [],
+  "exec": "yarn ts-node ./src/server.ts"
+}

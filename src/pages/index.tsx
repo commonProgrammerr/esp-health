@@ -6,7 +6,7 @@ import { useAsyncFn, useEffectOnce } from "react-use";
 import type { IDevicesFilter, IDevicesResponse } from "@/types";
 import Image from "next/image";
 import { StatusTypes } from "@/utils/enums";
-import logo_image from "@/public/logo.png";
+import logo_image from "@public/logo.png";
 import { Select } from "@/components/Select";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -16,6 +16,7 @@ const filters = Object.values(StatusTypes);
 export default function Home() {
   const router = useRouter();
   const filter = router.query.filter?.toString();
+  console.log(process.env.DB);
 
   const [{ loading, error, value }, reload] = useAsyncFn(
     async (filter: IDevicesFilter) => {
