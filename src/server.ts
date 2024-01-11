@@ -2,6 +2,7 @@ import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
 import { AppDataSource } from './data-source'
+import { error } from 'console'
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
@@ -12,8 +13,14 @@ const handle = app.getRequestHandler()
 
 console.log('Iniciando database...')
 
-AppDataSource.initialize().then(db => {
+AppDataSource.initialize().then(async db => {
   console.log(db.options.database, 'iniciado com sucesso!')
+
+  console.log('Sincronizando...')
+  await db.synchronize()
+  console.log('Done!')
+
+  console.log('Iniciando servidor...')
   app.prepare().then(() => {
     createServer(async (req, res) => {
       try {
@@ -35,4 +42,4 @@ AppDataSource.initialize().then(db => {
         console.log(`> Ready on http://${hostname}:${port}`)
       })
   })
-})
+}).catch(error => console.error(error))

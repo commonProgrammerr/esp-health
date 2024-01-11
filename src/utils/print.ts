@@ -1,6 +1,8 @@
 import PDFDocument from 'pdfkit';
 import fs from 'node:fs';
 import path from 'node:path'
+import { fonts_path } from './fonts'
+
 const base_path = process.env.PRINTS_DIR_PATH as string
 
 interface PrintOptions {
@@ -51,7 +53,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
       stream.once('error', reject)
 
       doc
-        .font('./fonts/calibri/bold.ttf')
+        .font(fonts_path.calibri.bold)
         .fontSize(title_size)
         .text('DeviceID', 0, margins.top, {
           width: doc_width,
@@ -59,7 +61,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         })
 
       doc
-        .font('./fonts/calibri/regular.ttf')
+        .font(fonts_path.calibri.regular)
         .fontSize(legenda_size)
         .text(text, 0, legenda_top, {
           width: doc_width,
@@ -67,7 +69,7 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         })
 
       //codebar
-      doc.font("./fonts/code128.ttf")
+      doc.font(fonts_path.code128)
         .fontSize(fontSize)
         .text(text, 0, barcode_top, {
           width: doc_width,
@@ -96,14 +98,14 @@ export async function printEti1015(text: string, options?: PrintOptions) {
         for (let i = 0; i < 3; i++) {
           const text_line = (j * minor_heigth) + (minor_heigth / 2) + (j ? -5 : 5)
           const text_start = (i * minor_width)
-          doc.font('./fonts/calibri/bold.ttf')
+          doc.font(fonts_path.calibri.bold)
             .fontSize(title_size / 2)
             .text('DeviceID', text_start, text_line, {
               width: minor_width,
               height: 20,
               align: 'center',
               baseline: 'bottom'
-            }).font('./fonts/calibri/regular.ttf')
+            }).font(fonts_path.calibri.regular)
             .fontSize(legenda_size / 2)
             .text(text, text_start, text_line, {
               width: minor_width,

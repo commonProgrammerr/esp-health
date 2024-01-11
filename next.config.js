@@ -1,5 +1,19 @@
+const path = require('path');
+const fs = require('fs');
+
 /** @type {import('next').NextConfig} */
+
+
+const api_cache_path = path.resolve(__dirname, 'cache')
+const database = process.env.NODE_ENV === 'production' ? 'prod.sqlite' : "dev.sqlite"
+
 const nextConfig = {
+  env: {
+    API_CACHE: api_cache_path,
+    LOGS_DIR_PATH: path.join(api_cache_path, 'logs'),
+    PRINTS_DIR_PATH: path.join(api_cache_path, 'pdf'),
+    DATABASE_PATH: path.join(api_cache_path, "database", database),
+  },
   reactStrictMode: true,
   async headers() {
     return [
@@ -24,5 +38,7 @@ const nextConfig = {
     ];
   },
 };
+
+
 
 module.exports = nextConfig;

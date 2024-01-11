@@ -1,3 +1,4 @@
+import { device_status } from "@/entities/Device";
 
 
 
@@ -19,7 +20,8 @@ export interface IDevicesResponse {
 }
 
 export interface IDeviceData {
-  mac: string
-  date?: Date
-  status: string
+  id: string
+  device_id: string
+  updated_at: Date
+  status: device_status
 }
