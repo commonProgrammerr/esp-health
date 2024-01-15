@@ -4,10 +4,11 @@ import { FileHandle, open, rename } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { formatDate } from '@/utils/formatDate'
-import { getDeviceRepository, getEventRepository } from '@/data-source'
-import { DevicesController } from '@/controllers/devices'
-import { EventType } from '@/models/app_event'
-import { device_status } from '@/models/device'
+import { getDataSource, getDeviceRepository, getEventRepository } from '@/data-source'
+// import { DevicesController } from '@/controllers/devices'
+import { AppEvent, EventType } from '@/models/app_event'
+import { Device } from '@/models'
+import { DeviceStatus } from '@/utils/enums'
 
 
 const base_path = process.env.LOGS_DIR_PATH
@@ -19,48 +20,51 @@ export default async function handler(
   let log_file: FileHandle | undefined = undefined
   try {
     if (req.method !== 'POST') {
-      res.status(400).send('Invalid method')
+      return res.status(400).send('Invalid method')
     }
-    const event_repo = await getEventRepository()
-    const device_repo = await getDeviceRepository()
 
     const { mac, pass_number, test_number } = req.headers;
+    const id = String(mac)
+
     let log_path = path.join(String(base_path), `${mac}.log`)
 
-    const device = await DevicesController.findOrCreate({
-      device_id: String(mac)
-    }, {
-      log_path,
-      device_id: String(mac)
+
+    const source = await getDataSource()
+    await source.transaction(async manager => {
+
+      const event_repo = manager.getRepository(AppEvent)
+      const device_repo = manager.getRepository(Device)
+
+      const device = await device_repo.findOneBy({ id, log_path }) || device_repo.create({ id, log_path, events_number: 0 })
+
+      const event = event_repo.create({
+        device,
+        type: EventType.LOG,
+        description: req.body
+      })
+
+      device.events_number++;
+
+      if (pass_number && test_number && test_number === pass_number)
+        device.status = DeviceStatus.REDY
+      else
+        device.status = DeviceStatus.BROKEN
+
+      log_file = await open(log_path, 'a+')
+
+      await device_repo.save(device)
+      await event_repo.save(event)
+
+      for (let line of String(req.body).split('\n')) {
+        await log_file?.write(`${formatDate(new Date())}: ${line}\n`)
+      }
+
+      log_file?.close()
+      res.status(200).send(formatDate(new Date()))
     })
-
-    const event = event_repo.create({
-      device,
-      type: EventType.LOG,
-      description: req.body
-    })
-
-    device.events_number++;
-
-    if (pass_number && test_number && test_number === pass_number)
-      device.status = device_status.REDY
-    else
-      device.status = device_status.BROKEN
-
-    log_file = await open(log_path, 'a+')
-
-    device_repo.save(device)
-    event_repo.save(event)
-
-    for (let line of String(req.body).split('\n')) {
-      await log_file?.write(`${formatDate(new Date())}: ${line}\n`)
-    }
-
-    log_file?.close()
-    res.status(200).send(formatDate(new Date()))
   } catch (error) {
     const { message } = error as Error
-    // console.log(error)
+    console.log(error)
     res.status(500).send(message)
   } finally {
     log_file?.close()

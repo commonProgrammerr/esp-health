@@ -1,19 +1,10 @@
-import { SelectProps } from "@radix-ui/react-select";
-import {
-  ChangeEvent,
-  ChangeEventHandler,
-  CSSProperties,
-  ReactNode,
-  useState,
-  SelectHTMLAttributes,
-} from "react";
+import { CSSProperties, ReactNode } from "react";
 // import { HiOutlineChevronDown } from "react-icons/hi";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
   CheckIcon,
 } from "@radix-ui/react-icons";
-import genId from "@/utils/genID";
 import _styles from "./styles.module.css";
 
 import {
@@ -29,7 +20,7 @@ import {
   SelectValue,
   SelectViewport,
 } from "@radix-ui/react-select";
-import { StatusTypes } from "@/utils/enums";
+import { DeviceStatus, getStatusText, status_texts } from "@/utils/enums";
 // import * as SelectPrimitive from '@radix-ui/react-select'
 
 interface Props {
@@ -47,11 +38,11 @@ interface Props {
 
 function color(status?: string) {
   switch (status) {
-    case StatusTypes.OK:
+    case status_texts[DeviceStatus.REDY]:
       return { backgroundColor: "#7AD39F", color: "white" };
-    case StatusTypes.FAIL:
+    case status_texts[DeviceStatus.BROKEN]:
       return { backgroundColor: "#b85d53", color: "white" };
-    case StatusTypes.PRINTED:
+    case status_texts[DeviceStatus.NEW]:
       return { backgroundColor: "#7ad3ce", color: "white" };
     default:
       return { color: "#000a" };

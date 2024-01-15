@@ -1,4 +1,4 @@
-import { DataSource } from 'typeorm'
+import { DataSource, EntityTarget, Repository } from 'typeorm'
 import fs from 'fs'
 
 import { Device, AppEvent } from './models'
@@ -43,17 +43,18 @@ export const AppDataSource = new DataSource({
   logger: 'file'
 })
 
-
-export const getDeviceRepository = async () => {
-  if (AppDataSource.isInitialized)
-    return AppDataSource.getRepository(Device)
+export async function getDataSource(source: DataSource = AppDataSource) {
+  if (source.isInitialized)
+    return Promise.resolve(source)
   else
-    return (await AppDataSource.initialize()).getRepository(Device)
+    return source.initialize()
 }
 
-export const getEventRepository = async () => {
-  if (AppDataSource.isInitialized)
-    return AppDataSource.getRepository(AppEvent)
-  else
-    return (await AppDataSource.initialize()).getRepository(AppEvent)
+async function loadRepo<T>(target: EntityTarget<T>) {
+  const source = await getDataSource()
+  return source.getRepository(target)
+
 }
+
+export const getDeviceRepository = async () => loadRepo(Device)
+export const getEventRepository = async () => loadRepo(AppEvent)

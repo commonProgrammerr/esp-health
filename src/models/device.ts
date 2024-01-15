@@ -1,48 +1,39 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
   DeleteDateColumn,
   BaseEntity,
+  PrimaryColumn
 } from "typeorm";
 
 import { AppEvent } from "./app_event";
+import { DeviceStatus } from "../utils/enums";
 
-export enum device_status {
-  REDY = 0,
-  NEW = 1,
-  BROKEN = 2,
-}
 @Entity('devices')
 export class Device extends BaseEntity {
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn()
   id: string
 
-  @Column()
-  log_path: string
-
-  @Column({
-    unique: true
-  })
-  device_id: string
-
-  @Column('integer', { default: device_status.NEW })
-  status: device_status
+  @Column('integer', { default: DeviceStatus.NEW })
+  status: DeviceStatus
 
   @OneToMany(() => AppEvent, (event) => event.device)
   events: AppEvent[]
 
-  @Column()
+  @Column({ default: 0 })
   events_number: number
 
-  @Column()
-  ticket_path: string
+  @Column({ nullable: true })
+  log_path: string
 
-  @Column({ default: 0 })
+  @Column({ nullable: true })
+  ticket_path?: string
+
+  @Column({ default: 0, nullable: false })
   ticket_downloads: number
 
   @CreateDateColumn()

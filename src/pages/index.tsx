@@ -3,24 +3,24 @@ import styles from "@/styles/Home.module.css";
 import { Row } from "@/components/Row";
 import { api } from "@/utils/api";
 import { useAsyncFn, useEffectOnce } from "react-use";
-import type { IDevicesFilter, IDevicesResponse } from "@/types";
+import type { IDevicesFilter } from "@/types";
 import Image from "next/image";
-import { StatusTypes } from "@/utils/enums";
 import logo_image from "@public/logo.png";
 import { Select } from "@/components/Select";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+import { Device } from "@/models";
+import { DeviceStatus, status_texts } from "@/utils/enums";
 
-const filters = Object.values(StatusTypes);
+const filters = status_texts;
 
 export default function Home() {
   const router = useRouter();
   const filter = router.query.filter?.toString();
-  console.log(process.env.DB);
 
   const [{ loading, error, value }, reload] = useAsyncFn(
     async (filter: IDevicesFilter) => {
-      return api.post<IDevicesResponse>("/devices", {
+      return api.post<Device[]>("/devices", {
         filter,
       });
     },
@@ -61,6 +61,7 @@ export default function Home() {
               options={filters}
               placeholder="Todos"
               onChange={(value) => {
+                console.log(DeviceStatus[value]);
                 router.query.filter = value;
                 router.push(router);
                 reload(value ? { status: value } : {});
@@ -68,7 +69,7 @@ export default function Home() {
             />
           </div>
         </div>
-        {value?.data.devices.map((dv, i) => (
+        {value?.data.map((dv, i) => (
           <Row key={i} data={dv} />
         ))}
       </main>

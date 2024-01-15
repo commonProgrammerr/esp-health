@@ -1,12 +1,9 @@
 import Tail from '@logdna/tail-file'
-import path from "node:path";
-
 import { Server } from 'socket.io'
 import { exec } from "node:child_process";
-import { findFile } from "@/utils/findFile";
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getDeviceRepository } from '@/data-source';
 
-const base_path = process.env.LOGS_DIR_PATH as string;
 
 let _server: any
 
@@ -22,21 +19,17 @@ export default async function Handler(
       return;
     }
 
-    const ids = await findFile(String(req.query.id), base_path)
-    const [id] = ids
-    const filePath = id && path.join(base_path, id)
+    const repo = await getDeviceRepository()
+    const { log_path } = await repo.findOneByOrFail({ id: String(req.query.id) })
     _server = server
     const io = new Server(server)
 
-    console.log(req.query.id, ids, id)
-
     io.on("connection", (socket) => {
-      const clientId = socket.id;
+      const client_id = socket.id;
+      console.log(`A client connected. ID: ${client_id}`);
+      socket.emit("client-new", client_id);
 
-      console.log(`A client connected. ID: ${clientId}`);
-      socket.emit("client-new", clientId);
-
-      exec(`tail -n 10 ${filePath}`, (error, stdout, stderr) => {
+      exec(`tail -n 10 ${log_path}`, (error, stdout, stderr) => {
         if (stderr || error)
           console.error(stderr, error)
 
@@ -45,7 +38,7 @@ export default async function Handler(
         )
       })
 
-      const tail = new Tail(filePath)
+      const tail = new Tail(log_path)
 
       tail.start()
         .catch(err => {

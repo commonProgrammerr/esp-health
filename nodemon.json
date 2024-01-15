@@ -1,7 +1,7 @@
 {
   "watch": [
     "./public",
-    "./src/entities",
+    "./src/models",
     "./src/data-source.ts",
     "./src/server.ts"
   ],
