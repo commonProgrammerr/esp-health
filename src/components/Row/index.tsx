@@ -21,7 +21,7 @@ export function Row({ data }: RowProps) {
       <span>{formatDate(new Date(updated_at))}</span>
       <span>{getStatusText(status)}</span>
       <div className={styles.row_action}>
-        {data.status !== DeviceStatus.BROKEN && (
+        {data.status === DeviceStatus.REDY && (
           <Link href={`/api/print?id=${id}`} type="button">
             <PrintIcon />
           </Link>

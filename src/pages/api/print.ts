@@ -1,12 +1,13 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { printEti1015 } from '@/utils/print'
+import { printEti1015 } from '@/services/print'
 import { existsSync, createReadStream, createWriteStream } from 'node:fs';
 import path from 'path'
 import { getDataSource } from '@/data-source';
 import { AppEvent, Device } from '@/models';
 import { EventType } from '@/models/app_event';
 import { DeviceStatus } from '@/utils/enums';
+import { MailerService, mailOptions } from '@/services/mailer';
 
 const base_path = process.env.PRINTS_DIR_PATH as string
 
@@ -38,6 +39,8 @@ export default async function handler(
       device.ticket_path = ticket_path;
       device.ticket_downloads++;
 
+      MailerService.addToQueue(mailOptions)
+
       const device_save = device_repo.save(device)
       const event_save = event_repo.save(event)
 
@@ -63,8 +66,6 @@ export default async function handler(
 
     }
   }
-
-
 }
 
 

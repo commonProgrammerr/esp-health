@@ -1,4 +1,4 @@
-import { DataSource, EntityTarget, Repository } from 'typeorm'
+import { DataSource, EntityTarget, FileLogger, Repository } from 'typeorm'
 import fs from 'fs'
 
 import { Device, AppEvent } from './models'
@@ -7,6 +7,7 @@ import path from 'path'
 
 const api_cache_path = path.resolve('.', 'cache')
 const database = process.env.NODE_ENV === 'production' ? 'prod.sqlite' : "dev.sqlite"
+const logPath = path.join('logs', 'database.log')
 
 const LOGS_DIR_PATH = path.join(api_cache_path, 'logs')
 const PRINTS_DIR_PATH = path.join(api_cache_path, 'pdf')
@@ -40,7 +41,7 @@ export const AppDataSource = new DataSource({
   ],
   // synchronize: true,
   logging: true,
-  logger: 'file'
+  logger: new FileLogger(true, { logPath })
 })
 
 export async function getDataSource(source: DataSource = AppDataSource) {

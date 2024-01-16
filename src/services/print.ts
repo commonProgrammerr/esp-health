@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit';
-import { fonts_path } from './fonts'
+import { fonts_path } from '../utils/fonts'
 
 const fontSize = 48 // relation: 120 -> [20.04,121.6]
 const legenda_size = 16

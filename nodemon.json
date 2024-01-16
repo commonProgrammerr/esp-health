@@ -3,7 +3,9 @@
     "./public",
     "./src/models",
     "./src/data-source.ts",
-    "./src/server.ts"
+    "./src/server.ts",
+    "./src/services/mailer.ts",
+    "./src/services/redis.ts"
   ],
   "ext": ".ts,.js",
   "ignore": [],

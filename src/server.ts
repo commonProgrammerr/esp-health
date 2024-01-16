@@ -2,7 +2,8 @@ import { createServer } from 'http'
 import { parse } from 'url'
 import next from 'next'
 import { AppDataSource } from './data-source'
-import { error } from 'console'
+import { MailerService } from './services/mailer'
+import { RedisServer } from './services/redis'
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
@@ -12,7 +13,6 @@ const app = next({ dev, hostname, port })
 const handle = app.getRequestHandler()
 
 console.log('Iniciando database...')
-
 AppDataSource.initialize().then(async db => {
   console.log(db.options.database, 'iniciado com sucesso!')
 
@@ -39,7 +39,10 @@ AppDataSource.initialize().then(async db => {
         process.exit(1)
       })
       .listen(port, () => {
-        console.log(`> Ready on http://${hostname}:${port}`)
+        RedisServer.startServer().then(() => {
+          MailerService.start()
+          console.log(`> Ready on http://${hostname}:${port}`)
+        })
       })
   })
 }).catch(error => console.error(error))
