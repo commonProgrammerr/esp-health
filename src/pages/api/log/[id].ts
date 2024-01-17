@@ -3,75 +3,59 @@ import { Server } from 'socket.io'
 import { exec } from "node:child_process";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getDeviceRepository } from '@/data-source';
+import { Socket } from 'socket.io-client';
+import { io } from '@/services/websocket';
 
 
-let _server: any
+let watches = {
+
+}
 
 export default async function Handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
   try {
-    const { server } = res.socket as any
 
-    if (server?.io) {
-      res.end();
-      return;
-    }
 
+    const id = String(req.query.id)
+    const { lines } = req.query
     const repo = await getDeviceRepository()
-    const { log_path } = await repo.findOneByOrFail({ id: String(req.query.id) })
-    _server = server
-    const io = new Server(server)
+    const { log_path } = await repo.findOneByOrFail({ id })
+
+    const tail = new Tail(log_path)
+    await tail.start()
+    tail?.on('truncated', data => console.log(data))
+
 
     io.on("connection", (socket) => {
-      const client_id = socket.id;
-      console.log(`A client connected. ID: ${client_id}`);
-      socket.emit("client-new", client_id);
-
-      exec(`tail -n 10 ${log_path}`, (error, stdout, stderr) => {
-        if (stderr || error)
-          console.error(stderr, error)
-
-        stdout.split('\n').forEach(line =>
-          socket.emit('line', line + '\n')
-        )
+      tail?.on('data', (data: Buffer) => {
+        console.log(data.toString('utf-8'))
+        socket.emit('line', data.toString('utf-8'))
       })
 
-      const tail = new Tail(log_path)
-
-      tail.start()
-        .catch(err => {
-          const { message } = err as Error;
-          console.error(err)
-          res.status(500).send(message);
-        })
-        .then(() => {
-
-          tail?.on('truncated', data => console.log(data))
-          tail?.on('data', (data: Buffer) => {
-            const text = data.toString('utf-8')
-            console.log(text)
-            socket.emit('line', text)
-          })
-
-
-          socket.on("disconnect", () => {
-            console.log("A client disconnected.");
-            tail?.quit()
-            tail?.emit('close')
-            if (_server) {
-              delete _server.io
-              _server = undefined
-            }
-          });
-        })
-
+      // socket.on("disconnect", () => {
+      //   socket.fetchSockets().then(sockets => {
+      //     if (sockets.length <= 0) {
+      //       tail?.quit()
+      //       tail?.emit('close')
+      //     }
+      //   })
+      // });
     });
 
-    server.io = io;
+    res.status(200).send(await new Promise<string>((resolve, reject) => {
+      exec(`tail -n ${lines || 10} ${log_path}`, (error, stdout, stderr) => {
+        if (stderr)
+          console.error(stderr)
 
-    res.end()
+        if (error)
+          reject(error)
+
+        resolve(stdout)
+      })
+    }))
+
   } catch (error) {
     const { message } = error as Error;
     res.status(500).send(message);

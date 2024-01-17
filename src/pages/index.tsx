@@ -2,7 +2,7 @@ import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { Row } from "@/components/Row";
 import { api } from "@/services/api";
-import { useAsyncFn, useEffectOnce } from "react-use";
+import { useAsyncFn } from "react-use";
 import type { IDevicesFilter } from "@/types";
 import Image from "next/image";
 import logo_image from "@public/logo.png";

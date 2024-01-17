@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import styles from "@/styles/dialog.module.css";
 import { Cross2Icon, EyeOpenIcon } from "@radix-ui/react-icons";
 import { Inter } from "next/font/google";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import io, { Socket } from "socket.io-client";
+// import { useSocketIo } from "@/hooks/useSocketIo";
+import { useAsyncFn } from "react-use";
+import { api } from "@/services/api";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,35 +19,62 @@ interface LogDialogProps {
 export default function LogDialog({ testeId }: LogDialogProps) {
   const [logs, setLogs] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-
-  const ref = useRef<Socket | null>(null);
-  const handleOpenDialog = useCallback(
-    () => setIsOpen((op) => !op),
-    [setIsOpen]
+  const [{ loading, value }, load] = useAsyncFn(async () =>
+    api.get(`/log/${testeId}`)
   );
 
+  const ref = useRef<Socket | null>(null);
   useEffect(() => {
-    console.log(isOpen, ref.current);
     if (isOpen) {
       if (ref.current) return;
 
-      fetch(`/api/log/${testeId}`);
-      ref.current = io();
+      ref.current = io(`ws://${window.location.hostname}:8080/`, {
+        autoConnect: true,
+      });
 
-      ref.current.on("connect", () => console.log("connected"));
-      ref.current.on("client-new", (id) => console.log("client-id:", id));
-      ref.current.on("line", (msg) => setLogs((logs) => logs + msg));
-    } else {
-      if (ref.current) {
-        ref.current.disconnect();
-        ref.current.close();
-        ref.current = null;
-      }
-      setLogs(() => {
-        return "";
+      ref.current.on("line", (msg) => {
+        console.log(msg);
+        setLogs((logs) => logs + msg);
       });
     }
-  }, [isOpen, testeId]);
+
+    return () => {
+      ref.current?.disconnect();
+      ref.current?.close();
+      ref.current = null;
+      setLogs("");
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      load();
+    }
+  }, [isOpen, load]);
+
+  const handleOpenDialog = useCallback(
+    () =>
+      setIsOpen((op) => {
+        if (op) ref.current.disconnect();
+        return !op;
+      }),
+    [setIsOpen]
+  );
+
+  // function socketHanlde(io: Socket) {
+  //   io.on("line", (msg) => setLogs((logs) => logs + msg));
+
+  //   return () => {
+  //     if (!isOpen) {
+  //       io.disconnect();
+  //       io.close();
+  //       socket_ref.current = null;
+  //       setLogs("");
+  //     }
+  //   };
+  // }
+
+  // const socket_ref = useSocketIo(`/api/socket/${testeId}`, socketHanlde);
 
   return (
     <Dialog.Root open={isOpen}>
@@ -84,9 +114,18 @@ export default function LogDialog({ testeId }: LogDialogProps) {
             asChild
           >
             <code>
-              {logs.split("\n").map((line, i) => (
-                <code key={`${line}@${i}`}>{line}</code>
-              ))}
+              {loading
+                ? "carregando..."
+                : value?.data
+                    .split("\n")
+                    .map((line, i) => (
+                      <code key={`_${line}@${i}`}>{line}</code>
+                    ))}
+              {logs.length > 0
+                ? logs
+                    .split("\n")
+                    .map((line, i) => <code key={`${line}@${i}`}>{line}</code>)
+                : !Boolean(value?.data) && "(vazio)"}
             </code>
           </Dialog.Description>
         </Dialog.Content>

@@ -21,12 +21,14 @@ AppDataSource.initialize().then(async db => {
   console.log('Done!')
 
   console.log('Iniciando servidor...')
+
   app.prepare().then(() => {
-    createServer(async (req, res) => {
+    const server = createServer(async (req, res) => {
       try {
         const parsedUrl = parse(req.url!, true)
 
-        await handle(req, res, parsedUrl)
+        if (parsedUrl.path !== '/api/socket')
+          await handle(req, res, parsedUrl)
 
       } catch (err) {
         console.error('Error occurred handling', req.url, err)
@@ -34,15 +36,17 @@ AppDataSource.initialize().then(async db => {
         res.end('internal server error')
       }
     })
-      .once('error', (err) => {
-        console.error(err)
-        process.exit(1)
+
+    server.once('error', (err) => {
+      console.error(err)
+      process.exit(1)
+    })
+
+    server.listen(port, () => {
+      RedisServer.startServer().then(() => {
+        MailerService.start()
+        console.log(`> Ready on http://${hostname}:${port}`)
       })
-      .listen(port, () => {
-        RedisServer.startServer().then(() => {
-          MailerService.start()
-          console.log(`> Ready on http://${hostname}:${port}`)
-        })
-      })
+    })
   })
 }).catch(error => console.error(error))
