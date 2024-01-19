@@ -13,7 +13,7 @@ import { DeviceStatus } from '@/utils/enums'
 
 const base_path = process.env.LOGS_DIR_PATH
 
-export default async function handler(
+export async function POST(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
