@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { printEti1015 } from '@/services/print'
-import { existsSync, createReadStream, createWriteStream } from 'node:fs';
+import { existsSync, createReadStream, createWriteStream, lstatSync, rmSync } from 'node:fs';
 import path from 'path'
 import { getDataSource } from '@/data-source';
 import { AppEvent, Device } from '@/models';
@@ -38,6 +38,7 @@ export default async function handler(
 
       device.ticket_path = ticket_path;
       device.ticket_downloads++;
+      device.status = DeviceStatus.PRINTED;
 
       MailerService.addToQueue(mailOptions)
 
@@ -54,6 +55,11 @@ export default async function handler(
           doc.pipe(createWriteStream(ticket_path))
           doc.pipe(res)
         })
+
+        if (existsSync(ticket_path) && lstatSync(ticket_path).size < 20 * 1024) {
+          rmSync(ticket_path)
+        }
+
       }
     })
 

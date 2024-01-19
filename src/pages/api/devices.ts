@@ -1,6 +1,6 @@
 import { getDeviceRepository } from '@/data-source'
 import { Device } from '@/models';
-import type { IDevicesRequest } from '@/types';
+import type { IDevicesRequest } from '@/@types';
 import { DeviceStatus, status_texts } from '@/utils/enums';
 import type { NextApiRequest, NextApiResponse } from 'next'
 
@@ -29,8 +29,8 @@ export default async function handler(
       //   updated_at: true,
       //   status: true
       // },
-      where: filter?.status && {
-        status: status_texts.indexOf(filter.status),
+      where: filter?.status && Number(filter.status) && {
+        status: Number(filter.status),
       },
       order: {
         updated_at: 'DESC'

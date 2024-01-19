@@ -27,7 +27,8 @@ getDataSource().then(async db => {
       const device = repo.create({
         id,
         status: file.endsWith('.pass')
-          ? DeviceStatus.REDY
+          ? existsSync(path.join(tickets_folder, `${id}.pdf`)) ? DeviceStatus.PRINTED :
+            DeviceStatus.REDY
           : lstat.size
             ? DeviceStatus.NEW
             : DeviceStatus.BROKEN,

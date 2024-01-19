@@ -24,15 +24,18 @@ export const Container = styled.div<{ columns: number }>`
 
 export const Cell = styled.span`
 
-  font-size: .75rem;
+  /* font-size: .75rem; */
+  font-size: .865rem;
   line-height: .875rem;
   padding: 14px;
-  border-right: 1px solid ${({ theme }) => darken(.03, theme.default.grey_light)};
+  text-anchor: middle;
+  /* border-right: 1px solid ${({ theme }) => darken(.03, theme.default.grey_light)}; */
   border-bottom: 1px solid ${({ theme }) => darken(.03, theme.default.grey_light)};
   
 
   strong {
-    font-size: .75rem;
+    /* font-size: .75rem; */
+    font-size: 1rem;
     line-height: .875rem;
     color: ${({ theme }) => theme.text.secondary};
   }

@@ -27,7 +27,10 @@ interface Props {
   name?: string;
   label?: string;
   children?: ReactNode;
-  options: string[];
+  options: Array<{
+    name: string;
+    value: string;
+  }>;
   value?: string;
   onChange?: (value: any) => void;
   startBlak?: boolean;
@@ -36,14 +39,16 @@ interface Props {
   placeholder?: string;
 }
 
-function color(status?: string) {
-  switch (status) {
-    case status_texts[DeviceStatus.REDY]:
-      return { backgroundColor: "#7AD39F", color: "white" };
-    case status_texts[DeviceStatus.BROKEN]:
+export function getStatusStyle(status?: number) {
+  switch (status as DeviceStatus) {
+    case DeviceStatus.REDY:
+      return { backgroundColor: "#3ba367", color: "white" };
+    case DeviceStatus.BROKEN:
       return { backgroundColor: "#b85d53", color: "white" };
-    case status_texts[DeviceStatus.NEW]:
-      return { backgroundColor: "#7ad3ce", color: "white" };
+    case DeviceStatus.NEW:
+      return { backgroundColor: "#109a93", color: "white" };
+    case DeviceStatus.PRINTED:
+      return { backgroundColor: "#6450be", color: "white" };
     default:
       return { color: "#000a" };
   }
@@ -66,10 +71,10 @@ function SelectComponent({
       <Select value={value} {...rest} onValueChange={onChange}>
         <SelectTrigger
           className={_styles.Trigger}
-          style={{ ...styles, ...color(value) }}
+          style={{ ...styles, ...getStatusStyle(Number(value)) }}
         >
           <SelectValue
-            defaultValue={options[0]}
+            defaultValue={options[0].value}
             placeholder={placeholder}
             onChange={onChange}
           />
@@ -96,14 +101,14 @@ function SelectComponent({
                   <SelectItem
                     className={_styles.Item}
                     key={i}
-                    value={option}
-                    style={color(option)}
+                    value={option.value}
+                    style={getStatusStyle(Number(option.value))}
                   >
                     <SelectItemText
                       className={_styles.ItemText}
-                      style={color(option)}
+                      style={getStatusStyle(Number(option.value))}
                     >
-                      {option}
+                      {option.name}
                     </SelectItemText>
                     <SelectItemIndicator className={_styles.ItemIndicator}>
                       <CheckIcon />
