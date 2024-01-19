@@ -14,7 +14,11 @@ const nextConfig = {
     PRINTS_DIR_PATH: path.join(api_cache_path, 'pdf'),
     DATABASE_PATH: path.join(api_cache_path, "database", database),
   },
-  reactStrictMode: true,
+  // reactStrictMode: true,
+  reactStrictMode: false,
+  compiler: {
+    styledComponents: true,
+  },
   async headers() {
     return [
       {
