@@ -7,7 +7,7 @@ import { getDataSource } from '@/data-source';
 import { AppEvent, Device } from '@/models';
 import { EventType } from '@/models/app_event';
 import { DeviceStatus } from '@/utils/enums';
-import { MailerService, mailOptions } from '@/services/mailer';
+import { MailerService } from '@/services/mailer';
 
 const base_path = process.env.PRINTS_DIR_PATH as string
 
@@ -40,7 +40,12 @@ export default async function handler(
       device.ticket_downloads++;
       device.status = DeviceStatus.PRINTED;
 
-      MailerService.addToQueue(mailOptions)
+      MailerService.addToQueue({
+        from: process.env.MAIL_USER,
+        to: process.env.MAIL_RECIPIES || 'cw.gribeiro@gmail.com',
+        subject: 'Nova impressão - autolaundry', // Subject line
+        text: `Nova impressão de etiqueta feita para o dispositivo ${device.id}.}`
+      })
 
       const device_save = device_repo.save(device)
       const event_save = event_repo.save(event)
