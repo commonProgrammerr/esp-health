@@ -5,7 +5,8 @@
     "./src/data-source.ts",
     "./src/server.ts",
     "./src/services/mailer.ts",
-    "./src/services/redis.ts"
+    "./src/services/redis.ts",
+    "./src/services/websocket.ts"
   ],
   "ext": ".ts,.js",
   "ignore": [],

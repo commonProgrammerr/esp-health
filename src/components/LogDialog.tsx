@@ -30,12 +30,12 @@ export default function LogDialog({ testeId }: LogDialogProps) {
 
       ref.current = io(`ws://${window.location.hostname}:8080/`, {
         autoConnect: true,
-      });
-
-      ref.current.on("line", (msg) => {
-        console.log(msg);
-        setLogs((logs) => logs + msg);
-      });
+      })
+        .emit("sub", testeId)
+        .on("line", (msg) => {
+          console.log(msg);
+          setLogs((logs) => logs + msg);
+        });
     }
 
     return () => {

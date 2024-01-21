@@ -4,6 +4,7 @@ import next from 'next'
 import { AppDataSource } from './data-source'
 import { MailerService } from './services/mailer'
 import { RedisServer } from './services/redis'
+import { websocket_server } from './services/websocket'
 
 const dev = process.env.NODE_ENV !== 'production'
 const hostname = 'localhost'
@@ -21,7 +22,6 @@ AppDataSource.initialize().then(async db => {
   console.log('Done!')
 
   console.log('Iniciando servidor...')
-
   app.prepare().then(() => {
     const server = createServer(async (req, res) => {
       try {
@@ -45,7 +45,9 @@ AppDataSource.initialize().then(async db => {
     server.listen(port, () => {
       RedisServer.startServer().then(() => {
         MailerService.start()
+        websocket_server.listen(8080)
         console.log(`> Ready on http://${hostname}:${port}`)
+
       })
     })
   })

@@ -13,12 +13,12 @@ const queue = new Bull('email', {
 //   },
 // });
 
-export const mailOptions = {
-  from: 'andre.escorel@tronst.com.br', // sender address
-  to: 'gustavo.escorel@gmail.com', // receiver (use array of string for a list)
-  subject: 'Subject of your email', // Subject line
-  html: '<p>Your html here</p>'// plain text body
-};
+// export const mailOptions = {
+//   from: 'andre.escorel@tronst.com.br', // sender address
+//   to: 'gustavo.escorel@gmail.com', // receiver (use array of string for a list)
+//   subject: 'Subject of your email', // Subject line
+//   html: '<p>Your html here</p>'// plain text body
+// };
 
 export const MailerService = {
 

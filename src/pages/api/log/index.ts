@@ -1,15 +1,16 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { FileHandle, open, rename } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { FileHandle, open } from 'node:fs/promises'
 import path from 'node:path'
 import { formatDate } from '@/utils/formatDate'
-import { getDataSource, getDeviceRepository, getEventRepository } from '@/data-source'
+import { getDataSource } from '@/data-source'
 // import { DevicesController } from '@/controllers/devices'
 import { AppEvent, EventType } from '@/models/app_event'
 import { Device } from '@/models'
 import { DeviceStatus } from '@/utils/enums'
+import { websocket, sendLog, websocket_server, roons, getRonns, websocket_handle } from '@/services/websocket'
 
+import { Server } from 'socket.io'
 
 const base_path = process.env.LOGS_DIR_PATH
 
@@ -42,6 +43,11 @@ export default async function handler(
         type: EventType.LOG,
         description: req.body
       })
+
+      if (event.description) {
+        // console.log('new event', getRonns())
+        websocket_handle.emit(id, event.description)
+      }
 
       device.events_number++;
 
