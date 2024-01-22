@@ -1,15 +1,14 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { FileHandle, open, rename } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
+import { FileHandle, open } from 'node:fs/promises'
 import path from 'node:path'
 import { formatDate } from '@/utils/formatDate'
-import { getDataSource, getDeviceRepository, getEventRepository } from '@/data-source'
+import { getDataSource } from '@/data-source'
+import { Server } from 'socket.io'
 // import { DevicesController } from '@/controllers/devices'
-import { AppEvent, EventType } from '@/models/app_event'
 import { Device } from '@/models'
-import { DeviceStatus } from '@/utils/enums'
-
+import { DeviceStatus, EventType } from '@/utils/enums'
+import { MailerService } from '@/services/mailer'
 
 const base_path = process.env.LOGS_DIR_PATH
 
@@ -31,17 +30,32 @@ export default async function handler(
 
     const source = await getDataSource()
     await source.transaction(async manager => {
-
-      const event_repo = manager.getRepository(AppEvent)
+      const websocket = (req.socket as any).websocket as Server
       const device_repo = manager.getRepository(Device)
 
-      const device = await device_repo.findOneBy({ id, log_path }) || device_repo.create({ id, log_path, events_number: 0 })
+      const device = await device_repo.findOne({
+        where: { id, log_path }, relations: {
+          events: true
+        }
+      }) || device_repo.create({ id, log_path, events_number: 0, events: [] })
 
-      const event = event_repo.create({
-        device,
-        type: EventType.LOG,
-        description: req.body
-      })
+      const result = await manager.createQueryBuilder()
+        .insert().into('events').values({
+          type: EventType.LOG,
+          description: req.body
+        }).execute()
+
+      device.events.push({
+        id: result.identifiers[0].id
+      } as any)
+
+      const logs = String(req.body).split('\n').map(line => `${formatDate(new Date())}: ${line}\n`)
+
+
+      if (req.body) {
+        for (let line of logs)
+          websocket.to(id).emit('line', line)
+      }
 
       device.events_number++;
 
@@ -50,10 +64,18 @@ export default async function handler(
       else
         device.status = DeviceStatus.BROKEN
 
+      if (device.status === DeviceStatus.REDY) {
+        MailerService.addToQueue({
+          from: process.env.MAIL_USER,
+          to: process.env.MAIL_RECIPIES,
+          subject: `ID habilitado: ${device.id}`, // Subject line
+          text: device.id
+        })
+      }
+
       log_file = await open(log_path, 'a+')
 
       await device_repo.save(device)
-      await event_repo.save(event)
 
       for (let line of String(req.body).split('\n')) {
         await log_file?.write(`${formatDate(new Date())}: ${line}\n`)

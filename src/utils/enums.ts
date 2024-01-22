@@ -20,3 +20,9 @@ export const status_texts = {
 export function getStatusText(status: DeviceStatus) {
   return status_texts[status]
 }
+
+export enum EventType {
+  LOG = 0,
+  PRINT = 1,
+  UPDATE = 2
+}

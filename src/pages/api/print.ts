@@ -4,11 +4,8 @@ import { printEti1015 } from '@/services/print'
 import { existsSync, createReadStream, createWriteStream, lstatSync, rmSync } from 'node:fs';
 import path from 'path'
 import { getDataSource } from '@/data-source';
-import { AppEvent, Device } from '@/models';
-import { EventType } from '@/models/app_event';
-import { DeviceStatus } from '@/utils/enums';
-import { MailerService } from '@/services/mailer';
-
+import { Device } from '@/models';
+import { DeviceStatus, EventType } from '@/utils/enums';
 const base_path = process.env.PRINTS_DIR_PATH as string
 
 
@@ -26,32 +23,35 @@ export default async function handler(
     const source = await getDataSource()
     await source.transaction(async manager => {
 
-      const event_repo = manager.getRepository(AppEvent)
+      // const event_repo = manager.getRepository('events')
       const device_repo = manager.getRepository(Device)
+      const device = await device_repo.findOneOrFail({
+        where: { id }, relations: {
+          events: true
+        }
+      })
 
-      const device = await device_repo.findOneByOrFail({ id })
-
-      if (device.status !== DeviceStatus.REDY)
+      if (
+        device.status !== DeviceStatus.REDY &&
+        device.status !== DeviceStatus.PRINTED)
         throw new InvalidDeviceStatus()
 
-      const event = event_repo.create({ device, type: EventType.PRINT })
+      // const event = event_repo.create({ device, type: EventType.PRINT })
 
       device.ticket_path = ticket_path;
       device.ticket_downloads++;
       device.status = DeviceStatus.PRINTED;
 
-      MailerService.addToQueue({
-        from: process.env.MAIL_USER,
-        to: process.env.MAIL_RECIPIES || 'cw.gribeiro@gmail.com',
-        subject: 'Nova impressão - autolaundry', // Subject line
-        text: `Nova impressão de etiqueta feita para o dispositivo ${device.id}.}`
-      })
+      const result = await manager.createQueryBuilder()
+        .insert().into('events').values({
+          type: EventType.PRINT,
+        }).execute()
 
-      const device_save = device_repo.save(device)
-      const event_save = event_repo.save(event)
+      device.events.push({
+        id: result.identifiers[0].id
+      } as any)
 
-      await device_save
-      await event_save
+      await device.save()
 
       if (has_cached_file) {
         createReadStream(ticket_path).pipe(res);
@@ -79,8 +79,8 @@ export default async function handler(
   }
 }
 
-
 class InvalidDeviceStatus extends Error {
+  message: string;
   constructor() {
     super("Invalid Device status");
     this.message = "Invalid Device status"
