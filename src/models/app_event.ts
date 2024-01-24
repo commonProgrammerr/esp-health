@@ -1,12 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToOne, BaseEntity } from "typeorm";
 import { Device } from "./device";
+import { EventType } from "../utils/enums";
 // import { User } from "./user";
-
-export enum EventType {
-  LOG = 0,
-  PRINT = 1,
-  UPDATE = 2
-}
 
 @Entity('events')
 export class AppEvent extends BaseEntity {

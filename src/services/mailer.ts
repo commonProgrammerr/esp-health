@@ -1,6 +1,10 @@
-import nodemailer, { SendMailOptions, SentMessageInfo, Transporter } from 'nodemailer'
-import Bull, { Job } from 'bull'
+// import nodemailer, { SendMailOptions } from 'nodemailer'
+import sgMail from '@sendgrid/mail'
+import type { MailDataRequired } from '@sendgrid/helpers/classes/mail'
 
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+import Bull, { Job } from 'bull'
 const queue = new Bull('email', {
   redis: 'localhost:127.0.0.1'
 })
@@ -22,7 +26,7 @@ const queue = new Bull('email', {
 
 export const MailerService = {
 
-  async addToQueue(options: SendMailOptions) {
+  async addToQueue(options: MailDataRequired) {
     console.log('Novo email adicionado a fila')
     return queue.add({ ...options })
   },
@@ -33,23 +37,15 @@ export const MailerService = {
       .catch(console.error)
   },
 
-  async processQueue(job: Job<SendMailOptions>) {
+  async processQueue(job: Job<MailDataRequired>) {
 
     const { to } = job.data
     console.log("Sending mail to %s", to);
 
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASSWORD
-      },
-    })
+    const [response] = await sgMail.send({ ...(job.data) });
 
-    const info = await transporter.sendMail({ ...(job.data) });
-
-    console.log("Message sent: %s", info.messageId);
+    console.log("Message sent. status code %s", response.statusCode);
     // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   }
 

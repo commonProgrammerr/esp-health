@@ -24,5 +24,6 @@ export function getStatusText(status: DeviceStatus) {
 export enum EventType {
   LOG = 0,
   PRINT = 1,
-  UPDATE = 2
+  UPDATE = 2,
+  APROVED = 3
 }

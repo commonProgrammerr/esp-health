@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { FileHandle, open } from 'node:fs/promises'
 import path from 'node:path'
 import { formatDate } from '@/utils/formatDate'
-import { getDataSource } from '@/data-source'
+import { getDataSource, getEventRepository } from '@/data-source'
 import { Server } from 'socket.io'
 // import { DevicesController } from '@/controllers/devices'
 import { Device } from '@/models'
@@ -11,6 +11,20 @@ import { DeviceStatus, EventType } from '@/utils/enums'
 import { MailerService } from '@/services/mailer'
 
 const base_path = process.env.LOGS_DIR_PATH
+
+function updateStatus(total, pass, device: Device) {
+
+  let event_type: EventType = EventType.LOG
+
+  if (pass === total) {
+    event_type = EventType.APROVED
+    device.status = DeviceStatus.REDY
+  }
+  else
+    device.status = DeviceStatus.BROKEN
+
+  return event_type
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -41,7 +55,7 @@ export default async function handler(
 
       const result = await manager.createQueryBuilder()
         .insert().into('events').values({
-          type: EventType.LOG,
+          type: updateStatus(test_number, pass_number, device),
           description: req.body
         }).execute()
 
@@ -49,28 +63,12 @@ export default async function handler(
         id: result.identifiers[0].id
       } as any)
 
+      device.events_number++;
+
       const logs = String(req.body).split('\n').map(line => `${formatDate(new Date())}: ${line}\n`)
-
-
       if (req.body) {
         for (let line of logs)
           websocket.to(id).emit('line', line)
-      }
-
-      device.events_number++;
-
-      if (pass_number && test_number && test_number === pass_number)
-        device.status = DeviceStatus.REDY
-      else
-        device.status = DeviceStatus.BROKEN
-
-      if (device.status === DeviceStatus.REDY) {
-        MailerService.addToQueue({
-          from: process.env.MAIL_USER,
-          to: process.env.MAIL_RECIPIES,
-          subject: `ID habilitado: ${device.id}`, // Subject line
-          text: device.id
-        })
       }
 
       log_file = await open(log_path, 'a+')
@@ -82,8 +80,26 @@ export default async function handler(
       }
 
       log_file?.close()
-      res.status(200).send(formatDate(new Date()))
     })
+
+    const events_repo = await getEventRepository()
+    const [events, total] = await events_repo.findAndCount({
+      where: {
+        type: EventType.APROVED,
+        device: { id }
+      }
+    })
+
+    if (total === 1) {
+      console.log(`ID habilitado: ${id}`)
+      MailerService.addToQueue({
+        from: "naoresponda@tronst.com.br",
+        to: process.env.MAIL_RECIPIES,
+        subject: `ID habilitado: ${id}`, // Subject line
+        text: id
+      })
+    }
+    res.status(200).send(formatDate(new Date()))
   } catch (error) {
     const { message } = error as Error
     console.log(error)
