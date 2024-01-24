@@ -13,7 +13,8 @@ const nextConfig = {
     LOGS_DIR_PATH: path.join(api_cache_path, 'logs'),
     PRINTS_DIR_PATH: path.join(api_cache_path, 'pdf'),
     DATABASE_PATH: path.join(api_cache_path, "database", database),
-    MAIL_RECIPIES: "autolaundry@tronst.com.br"
+    MAIL_RECIPIES: "andre.escorel@tronst.com.br"
+    // MAIL_RECIPIES: "autolaundry@tronst.com.br"
 
   },
   // reactStrictMode: true,

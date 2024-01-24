@@ -66,7 +66,7 @@ export default async function handler(
 
       if (device.status === DeviceStatus.REDY) {
         MailerService.addToQueue({
-          from: process.env.MAIL_USER,
+          from: "naoresponda@tronst.com.br",
           to: process.env.MAIL_RECIPIES,
           subject: `ID habilitado: ${device.id}`, // Subject line
           text: device.id
