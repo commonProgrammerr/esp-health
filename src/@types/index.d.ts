@@ -46,3 +46,21 @@ export interface IDeviceData {
   updated_at: Date
   status: device_status
 }
+
+export interface TrialAPIResponseOk {
+  deviceTrialInfo: {
+    id: string,
+    startedAt?: Date | null,
+    tempoTrial: number,
+    permiteLog: boolean,
+    deviceId: string,
+    updatedAt: string,
+    createdAt: string,
+    deleted: boolean,
+    status: string //"ACTIVE"
+  }
+}
+export interface TrialAPIResponseFail {
+  statusCode: number,
+  message: string
+}

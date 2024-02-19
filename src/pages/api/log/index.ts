@@ -9,6 +9,8 @@ import { Server } from 'socket.io'
 import { Device } from '@/models'
 import { DeviceStatus, EventType } from '@/utils/enums'
 import { MailerService } from '@/services/mailer'
+import axios, { AxiosError } from 'axios'
+import { TrialAPIResponseFail, TrialAPIResponseOk } from '@/@types'
 
 const base_path = process.env.LOGS_DIR_PATH
 
@@ -80,6 +82,13 @@ export default async function handler(
       }
 
       log_file?.close()
+
+      const { data, status } = await axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
+        token: process.env.TRIAL_API_TOKEN,
+        serialCode: id
+      })
+
+      console.log(status)
     })
 
     const events_repo = await getEventRepository()
@@ -96,14 +105,31 @@ export default async function handler(
         from: "naoresponda@tronst.com.br",
         to: process.env.MAIL_RECIPIES,
         subject: `ID habilitado: ${id}`, // Subject line
-        text: id
+        text: id,
       })
     }
     res.status(200).send(formatDate(new Date()))
   } catch (error) {
-    const { message } = error as Error
-    console.log(error)
-    res.status(500).send(message)
+
+    if (error instanceof AxiosError) {
+      const { request, response } = error as AxiosError
+      const { serialCode } = request.data
+      const { message } = response.data as TrialAPIResponseFail
+
+      MailerService.addToQueue({
+        from: "naoresponda@tronst.com.br",
+        to: process.env.MAIL_RECIPIES,
+        subject: `Erro de cadastro [${serialCode}]`, // Subject line
+        text: `Falha ao cadastrar dipositivo ${serialCode} no sistema. 
+\n\nresposta do servidor: ${Buffer.from(JSON.stringify(response)).toString('base64')}`,
+      })
+
+      res.status(500).send(message)
+    } else {
+      const { message } = error as Error
+      console.log(error)
+      res.status(500).send(message)
+    }
   } finally {
     log_file?.close()
   }
