@@ -7,7 +7,8 @@
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "build": "next build",
     "start": "NODE_ENV=production ts-node src/server.ts",
-    "lint": "next lint"
+    "lint": "next lint",
+    "update": "git fetch && git pull && yarn && yarn build && sudo systemctl restart"
   },
   "dependencies": {
     "@logdna/tail-file": "^3.0.1",
