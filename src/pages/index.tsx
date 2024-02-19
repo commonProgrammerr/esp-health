@@ -48,6 +48,10 @@ export default function Home() {
           value={filter}
           options={[
             {
+              name: " ",
+              value: " ",
+            },
+            {
               name: status_texts[DeviceStatus.BROKEN],
               value: String(DeviceStatus.BROKEN),
             },
@@ -68,7 +72,6 @@ export default function Home() {
               value: "all",
             },
           ]}
-          placeholder="Todos"
           onChange={(value) => {
             console.log(DeviceStatus[value]);
             router.query.filter = value;

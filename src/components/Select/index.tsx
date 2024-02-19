@@ -71,7 +71,12 @@ function SelectComponent({
       <Select value={value} {...rest} onValueChange={onChange}>
         <SelectTrigger
           className={_styles.Trigger}
-          style={{ ...styles, ...getStatusStyle(Number(value)) }}
+          style={{
+            ...styles,
+            ...(value !== " "
+              ? getStatusStyle(Number(value))
+              : { color: "#000a" }),
+          }}
         >
           <SelectValue
             defaultValue={options[0].value}
@@ -102,11 +107,19 @@ function SelectComponent({
                     className={_styles.Item}
                     key={i}
                     value={option.value}
-                    style={getStatusStyle(Number(option.value))}
+                    style={
+                      option.value !== " "
+                        ? getStatusStyle(Number(option.value))
+                        : { color: "#000a" }
+                    }
                   >
                     <SelectItemText
                       className={_styles.ItemText}
-                      style={getStatusStyle(Number(option.value))}
+                      style={
+                        option.value !== " "
+                          ? getStatusStyle(Number(option.value))
+                          : { color: "#000a" }
+                      }
                     >
                       {option.name}
                     </SelectItemText>

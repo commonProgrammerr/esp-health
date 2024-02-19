@@ -29,11 +29,11 @@ export default async function handler(
       //   updated_at: true,
       //   status: true
       // },
-      where: Number.isNaN(Number(filter?.status)) ? ([
+      where: filter?.status === ' ' ? ([
         { status: DeviceStatus.BROKEN },
         { status: DeviceStatus.NEW },
         { status: DeviceStatus.REDY },
-      ]) : ({
+      ]) : filter.status === 'all' ? undefined : ({
         status: Number(filter.status),
       }),
       order: {
