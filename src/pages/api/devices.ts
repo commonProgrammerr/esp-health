@@ -29,7 +29,7 @@ export default async function handler(
       //   updated_at: true,
       //   status: true
       // },
-      where: filter?.status === ' ' ? ([
+      where: (filter?.status === undefined || filter?.status === ' ') ? ([
         { status: DeviceStatus.BROKEN },
         { status: DeviceStatus.NEW },
         { status: DeviceStatus.REDY },
