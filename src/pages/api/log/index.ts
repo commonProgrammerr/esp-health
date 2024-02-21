@@ -11,6 +11,7 @@ import { DeviceStatus, EventType } from '@/utils/enums'
 import { MailerService } from '@/services/mailer'
 import axios, { AxiosError } from 'axios'
 import { TrialAPIResponseFail, TrialAPIResponseOk } from '@/@types'
+import { Console, error } from 'node:console'
 
 const base_path = process.env.LOGS_DIR_PATH
 
@@ -50,9 +51,7 @@ export default async function handler(
       const device_repo = manager.getRepository(Device)
 
       const device = await device_repo.findOne({
-        where: { id, log_path }, relations: {
-          events: true
-        }
+        where: { id, log_path }, relations: { events: true }
       }) || device_repo.create({ id, log_path, events_number: 0, events: [] })
 
       const result = await manager.createQueryBuilder()
@@ -82,54 +81,64 @@ export default async function handler(
       }
 
       log_file?.close()
-
-      const { data, status } = await axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
-        token: process.env.TRIAL_API_TOKEN,
-        serialCode: id
-      })
-
-      console.log(status)
     })
 
-    const events_repo = await getEventRepository()
-    const [events, total] = await events_repo.findAndCount({
-      where: {
-        type: EventType.APROVED,
-        device: { id }
+    const { data, status } = await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
+      token: process.env.TRIAL_API_TOKEN,
+      id: id
+    }).then(async (res) => {
+
+      const events_repo = await getEventRepository()
+      const [events, total] = await events_repo.findAndCount({
+        where: {
+          type: EventType.APROVED,
+          device: { id }
+        }
+      })
+
+      if (total === 1) {
+        console.log(`ID habilitado: ${id}`)
+        MailerService.addToQueue({
+          from: "naoresponda@tronst.com.br",
+          to: process.env.MAIL_RECIPIES,
+          subject: `ID habilitado: ${id}`, // Subject line
+          text: id,
+        })
       }
+      return res
     })
+      .catch((error: AxiosError) => {
+        const {
+          data,
+          headers,
+          config,
+          status,
+          statusText
+        } = error.response
+        console.error(`Erro de cadastro [${id}]`)
+        MailerService.addToQueue({
+          from: "naoresponda@tronst.com.br",
+          to: process.env.MAIL_RECIPIES,
+          subject: `Erro de cadastro [${id}]`, // Subject line
+          text: `Falha ao cadastrar dipositivo ${id} no sistema. \n\n\n\nresposta do servidor: ${Buffer.from(JSON.stringify({
+            data,
+            headers,
+            config,
+            status,
+            statusText
+          })).toString('base64')}`,
+        })
+        return error.response
+      }))
 
-    if (total === 1) {
-      console.log(`ID habilitado: ${id}`)
-      MailerService.addToQueue({
-        from: "naoresponda@tronst.com.br",
-        to: process.env.MAIL_RECIPIES,
-        subject: `ID habilitado: ${id}`, // Subject line
-        text: id,
-      })
-    }
+
     res.status(200).send(formatDate(new Date()))
   } catch (error) {
 
-    if (error instanceof AxiosError) {
-      const { request, response } = error as AxiosError
-      const { serialCode } = request.data
-      const { message } = response.data as TrialAPIResponseFail
+    const { message } = error as Error
+    res.status(500).send(message)
 
-      MailerService.addToQueue({
-        from: "naoresponda@tronst.com.br",
-        to: process.env.MAIL_RECIPIES,
-        subject: `Erro de cadastro [${serialCode}]`, // Subject line
-        text: `Falha ao cadastrar dipositivo ${serialCode} no sistema. 
-\n\nresposta do servidor: ${Buffer.from(JSON.stringify(response)).toString('base64')}`,
-      })
-
-      res.status(500).send(message)
-    } else {
-      const { message } = error as Error
-      console.log(error)
-      res.status(500).send(message)
-    }
+    console.log(error)
   } finally {
     log_file?.close()
   }
