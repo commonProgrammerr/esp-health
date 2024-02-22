@@ -74,7 +74,7 @@ export default async function handler(
 
       log_file = await open(log_path, 'a+')
 
-      device.status === DeviceStatus.REDY && (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
+      device.status === DeviceStatus.REDY && await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
         token: process.env.TRIAL_API_TOKEN,
         serialCode: id
       })
