@@ -25,7 +25,7 @@ export default async function handler(
           serialCode: id,
         }
       )
-      device.status = device.ticket_downloads ? DeviceStatus.REDY : DeviceStatus.PRINTED
+      device.status = device.ticket_downloads ? DeviceStatus.PRINTED : DeviceStatus.REDY
 
       await repo.save(device)
     } else {
