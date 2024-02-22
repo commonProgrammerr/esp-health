@@ -15,6 +15,10 @@ import { PrintIcon } from "@/components/PrintIcon";
 import LogDialog from "@/components/LogDialog";
 import { DeviceStatus, getStatusText, status_texts } from "@/utils/enums";
 import { Select, getStatusStyle } from "@/components/Select";
+import { toast } from "react-toastify";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
+import axios from "axios";
 
 export default function Home() {
   const router = useRouter();
@@ -105,12 +109,24 @@ export default function Home() {
               updated_at: formatDate(new Date(updated_at)),
               actions: (
                 <Actions>
-                  {(status === DeviceStatus.REDY ||
+                  {((status === DeviceStatus.REDY ||
                     status === DeviceStatus.PRINTED) && (
                     <Link href={`/api/print?id=${id}`} type="button">
                       <PrintIcon />
                     </Link>
-                  )}
+                  )) ||
+                    (status === DeviceStatus.NOT_REGISTERED && (
+                      <button
+                        onClick={() =>
+                          toast.promise(api.post("/retry", { id }), {
+                            success: "Cadastrado com sucesso!",
+                            error: "Erro no cadastro :(",
+                          })
+                        }
+                      >
+                        <ReloadIcon />
+                      </button>
+                    ))}
                   <LogDialog testeId={id} />
                 </Actions>
               ),

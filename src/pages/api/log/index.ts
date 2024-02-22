@@ -21,7 +21,7 @@ function updateStatus(total, pass, device: Device) {
 
   if (pass === total) {
     event_type = EventType.APROVED
-    device.status = DeviceStatus.REDY
+    device.status = device.ticket_downloads >= 1 ? DeviceStatus.PRINTED : DeviceStatus.REDY
   }
   else
     device.status = DeviceStatus.BROKEN
@@ -74,7 +74,7 @@ export default async function handler(
 
       log_file = await open(log_path, 'a+')
 
-      device.status === DeviceStatus.REDY && await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
+      device.status !== DeviceStatus.BROKEN && await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
         token: process.env.TRIAL_API_TOKEN,
         serialCode: id
       })
