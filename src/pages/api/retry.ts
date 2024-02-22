@@ -5,6 +5,7 @@ import { DeviceStatus, status_texts } from '@/utils/enums';
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios, { AxiosError } from 'axios';
 import path from 'node:path';
+import { MailerService } from '@/services/mailer';
 
 
 export default async function handler(
@@ -24,8 +25,16 @@ export default async function handler(
           token: process.env.TRIAL_API_TOKEN,
           serialCode: id,
         }
-      )
-      device.status = device.ticket_downloads ? DeviceStatus.PRINTED : DeviceStatus.REDY
+      ).then(() => {
+        console.log(`ID habilitado: ${id}`)
+        device.status = device.ticket_downloads ? DeviceStatus.PRINTED : DeviceStatus.REDY
+        MailerService.addToQueue({
+          from: "naoresponda@tronst.com.br",
+          to: process.env.MAIL_RECIPIES,
+          subject: `ID habilitado: ${id}`, // Subject line
+          text: id,
+        })
+      })
 
       await repo.save(device)
     } else {
