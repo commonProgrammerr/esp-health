@@ -64,7 +64,6 @@ export default async function handler(
         if (existsSync(ticket_path) && lstatSync(ticket_path).size < 20 * 1024) {
           rmSync(ticket_path)
         }
-
       }
     })
 

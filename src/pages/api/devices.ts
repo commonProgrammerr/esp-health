@@ -33,6 +33,7 @@ export default async function handler(
         { status: DeviceStatus.BROKEN },
         { status: DeviceStatus.NEW },
         { status: DeviceStatus.REDY },
+        { status: DeviceStatus.NOT_REGISTERED },
       ]) : filter.status === 'all' ? undefined : ({
         status: Number(filter.status),
       }),

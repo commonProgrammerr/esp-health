@@ -45,6 +45,8 @@ export function getStatusStyle(status?: number) {
       return { backgroundColor: "#3ba367", color: "white" };
     case DeviceStatus.BROKEN:
       return { backgroundColor: "#b85d53", color: "white" };
+    case DeviceStatus.NOT_REGISTERED:
+      return { backgroundColor: "#b9b252", color: "white" };
     case DeviceStatus.NEW:
       return { backgroundColor: "#109a93", color: "white" };
     case DeviceStatus.PRINTED:

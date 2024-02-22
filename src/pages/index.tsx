@@ -68,6 +68,10 @@ export default function Home() {
               value: String(DeviceStatus.REDY),
             },
             {
+              name: status_texts[DeviceStatus.NOT_REGISTERED],
+              value: String(DeviceStatus.NOT_REGISTERED),
+            },
+            {
               name: "Todos",
               value: "all",
             },

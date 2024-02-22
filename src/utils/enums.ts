@@ -2,7 +2,8 @@ export enum DeviceStatus {
   REDY = 0,
   NEW = 1,
   BROKEN = 2,
-  PRINTED = 3
+  PRINTED = 3,
+  NOT_REGISTERED = 4
 }
 // export enum StatusTypes {
 //   OK = 'Na fila',
@@ -14,7 +15,8 @@ export const status_texts = {
   [DeviceStatus.REDY]: 'Sem defeito',
   [DeviceStatus.NEW]: 'Novo',
   [DeviceStatus.BROKEN]: 'Com defeito',
-  [DeviceStatus.PRINTED]: 'Impresso'
+  [DeviceStatus.PRINTED]: 'Impresso',
+  [DeviceStatus.NOT_REGISTERED]: 'Não registrado'
 }
 
 export function getStatusText(status: DeviceStatus) {

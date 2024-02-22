@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { FileHandle, open } from 'node:fs/promises'
 import path from 'node:path'
 import { formatDate } from '@/utils/formatDate'
-import { getDataSource, getEventRepository } from '@/data-source'
+import { getDataSource, getDeviceRepository, getEventRepository } from '@/data-source'
 import { Server } from 'socket.io'
 // import { DevicesController } from '@/controllers/devices'
 import { Device } from '@/models'
@@ -85,7 +85,7 @@ export default async function handler(
 
     const { data, status } = await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
       token: process.env.TRIAL_API_TOKEN,
-      id: id
+      serialCode: id
     }).then(async (res) => {
 
       const events_repo = await getEventRepository()
@@ -107,7 +107,7 @@ export default async function handler(
       }
       return res
     })
-      .catch((error: AxiosError) => {
+      .catch(async (error: AxiosError) => {
         const {
           data,
           headers,
@@ -115,19 +115,28 @@ export default async function handler(
           status,
           statusText
         } = error.response
-        console.error(`Erro de cadastro [${id}]`)
-        MailerService.addToQueue({
-          from: "naoresponda@tronst.com.br",
-          to: process.env.MAIL_RECIPIES,
-          subject: `Erro de cadastro [${id}]`, // Subject line
-          text: `Falha ao cadastrar dipositivo ${id} no sistema. \n\n\n\nresposta do servidor: ${Buffer.from(JSON.stringify({
-            data,
-            headers,
-            config,
-            status,
-            statusText
-          })).toString('base64')}`,
-        })
+
+        const device_repo = await getDeviceRepository()
+        const device = await device_repo.findOneBy({ id })
+
+        if (device)
+          device.status = DeviceStatus.NOT_REGISTERED;
+
+        console.error(`Erro de cadastro: ${id}`)
+        // MailerService.addToQueue({
+        //   from: "naoresponda@tronst.com.br",
+        //   to: process.env.MAIL_RECIPIES,
+        //   subject: `Erro de cadastro [${id}]`, // Subject line
+        //   text: `Falha ao cadastrar dipositivo ${id} no sistema. \n\n\n\nresposta do servidor: ${Buffer.from(JSON.stringify({
+        //     data,
+        //     headers,
+        //     config,
+        //     status,
+        //     statusText
+        //   })).toString('base64')}`,
+        // })
+
+        await device?.save()
         return error.response
       }))
 
@@ -143,3 +152,5 @@ export default async function handler(
     log_file?.close()
   }
 }
+
+const jso = { "data": { "statusCode": 400, "message": ["serialCode must be a string"], "error": "Bad Request" }, "headers": { "x-powered-by": "Express", "vary": "Origin", "access-control-allow-credentials": "true", "access-control-expose-headers": "Content-Disposition", "content-type": "application/json; charset=utf-8", "etag": "W/\"52-5qFYeP9SLYmNsDtDK0kCCn9r+sw\"", "x-cloud-trace-context": "67f758f473a84e1362c9f695bde96b76;o=1", "date": "Thu, 22 Feb 2024 14:16:44 GMT", "server": "Google Frontend", "content-length": "82", "alt-svc": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000" }, "config": { "transitional": { "silentJSONParsing": true, "forcedJSONParsing": true, "clarifyTimeoutError": false }, "adapter": ["xhr", "http"], "transformRequest": [null], "transformResponse": [null], "timeout": 0, "xsrfCookieName": "XSRF-TOKEN", "xsrfHeaderName": "X-XSRF-TOKEN", "maxContentLength": -1, "maxBodyLength": -1, "env": {}, "headers": { "Accept": "application/json, text/plain, */*", "Content-Type": "application/json", "User-Agent": "axios/1.6.0", "Content-Length": "68", "Accept-Encoding": "gzip, compress, deflate, br" }, "method": "post", "url": "https:/dev-tronst-autolaundry-m3tnmz4beq-uc.a.run.app/v1/device-trial/hardware", "data": "{\"token\":\"f6bfb4a7-d432-4544-a85a-05b670907ad8\",\"id\":\"70041DFA4AB6\"}" }, "status": 400, "statusText": "Bad Request" }
