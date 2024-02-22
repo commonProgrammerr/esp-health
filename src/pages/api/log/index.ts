@@ -74,6 +74,25 @@ export default async function handler(
 
       log_file = await open(log_path, 'a+')
 
+      device.status === DeviceStatus.REDY && (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
+        token: process.env.TRIAL_API_TOKEN,
+        serialCode: id
+      })
+        .then(async (res) => {
+          console.log(`ID habilitado: ${id}`)
+          MailerService.addToQueue({
+            from: "naoresponda@tronst.com.br",
+            to: process.env.MAIL_RECIPIES,
+            subject: `ID habilitado: ${id}`, // Subject line
+            text: id,
+          })
+        })
+        .catch(async (error: AxiosError) => {
+          device.status = DeviceStatus.NOT_REGISTERED;
+          console.error(`Erro de cadastro: ${id}`)
+          return error.response
+        }))
+
       await device_repo.save(device)
 
       for (let line of String(req.body).split('\n')) {
@@ -82,64 +101,6 @@ export default async function handler(
 
       log_file?.close()
     })
-
-    const { data, status } = await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
-      token: process.env.TRIAL_API_TOKEN,
-      serialCode: id
-    }).then(async (res) => {
-
-      const events_repo = await getEventRepository()
-      const [events, total] = await events_repo.findAndCount({
-        where: {
-          type: EventType.APROVED,
-          device: { id }
-        }
-      })
-
-      if (total === 1) {
-        console.log(`ID habilitado: ${id}`)
-        MailerService.addToQueue({
-          from: "naoresponda@tronst.com.br",
-          to: process.env.MAIL_RECIPIES,
-          subject: `ID habilitado: ${id}`, // Subject line
-          text: id,
-        })
-      }
-      return res
-    })
-      .catch(async (error: AxiosError) => {
-        const {
-          data,
-          headers,
-          config,
-          status,
-          statusText
-        } = error.response
-
-        const device_repo = await getDeviceRepository()
-        const device = await device_repo.findOneBy({ id })
-
-        if (device)
-          device.status = DeviceStatus.NOT_REGISTERED;
-
-        console.error(`Erro de cadastro: ${id}`)
-        // MailerService.addToQueue({
-        //   from: "naoresponda@tronst.com.br",
-        //   to: process.env.MAIL_RECIPIES,
-        //   subject: `Erro de cadastro [${id}]`, // Subject line
-        //   text: `Falha ao cadastrar dipositivo ${id} no sistema. \n\n\n\nresposta do servidor: ${Buffer.from(JSON.stringify({
-        //     data,
-        //     headers,
-        //     config,
-        //     status,
-        //     statusText
-        //   })).toString('base64')}`,
-        // })
-
-        await device?.save()
-        return error.response
-      }))
-
 
     res.status(200).send(formatDate(new Date()))
   } catch (error) {
