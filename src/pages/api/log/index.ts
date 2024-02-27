@@ -74,7 +74,7 @@ export default async function handler(
 
       log_file = await open(log_path, 'a+')
 
-      device.status !== DeviceStatus.BROKEN && await (axios.post<TrialAPIResponseOk>(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
+      device.status !== DeviceStatus.BROKEN && await (axios.post(path.join(process.env.TRIAL_API_URL, `/device-trial/hardware`), {
         token: process.env.TRIAL_API_TOKEN,
         serialCode: id
       })
@@ -88,8 +88,10 @@ export default async function handler(
           })
         })
         .catch(async (error: AxiosError) => {
-          device.status = DeviceStatus.NOT_REGISTERED;
-          console.error(`Erro de cadastro: ${id}`)
+          if (error.response.status !== 409) {
+            device.status = DeviceStatus.NOT_REGISTERED;
+            console.error(`Erro de cadastro: ${id}`, error.response.statusText, error.response.headers, error.response.data)
+          }
           return error.response
         }))
 
