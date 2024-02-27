@@ -2,11 +2,11 @@ import PDFDocument from 'pdfkit';
 import { fonts_path } from '../utils/fonts'
 import Encoder from 'code-128-encoder'
 
-const fontSize = 52 // relation: 120 -> [20.04,121.6]
+const fontSize = 60 // relation: 120 -> [20.04,121.6]
 const legenda_size = 17
 // const title_size = 14
 
-const fontWidth = 16
+const fontWidth = fontSize * 0.33
 // const fontHeight = 69.6
 
 const encoder = new Encoder()
@@ -14,16 +14,17 @@ const encoder = new Encoder()
 
 export async function printEti1015(text: string, prepare?: (doc: PDFKit.PDFDocument) => Promise<void>) {
   const encoded_text = encoder.encode(text)
-  const doc_width = (encoded_text.length * fontWidth)
+  const doc_width = 260
+  // const doc_width = (encoded_text.length * fontWidth)
   const doc_heigth = 105.6
   // const doc_width = 10 + (text.length * fontWidth)
-  // const doc_heigth = 98
+  const _heigth = 90
   const minor_width = doc_width / 3
   const minor_heigth = doc_heigth / 2
   // create a document and pipe to a blob 
   const doc = new PDFDocument({
     // size: [432, 288], // a smaller document for small badge printers
-    size: [doc_width, doc_heigth],
+    size: [doc_width, _heigth],
     compress: true
   });
 
@@ -40,27 +41,29 @@ export async function printEti1015(text: string, prepare?: (doc: PDFKit.PDFDocum
       doc
         .font(fonts_path.calibri.bold)
         .fontSize(16)
-        .text('DeviceID', 0, (doc_heigth / 2) - 20, {
-          width: doc_width,
-          height: 20,
-          align: 'center',
-          baseline: 'bottom'
-        })
-
-      doc
-        .font(fonts_path.calibri.regular)
-        .fontSize(legenda_size)
-        .text(text, 0, (doc_heigth / 2) + 26, {
+        // .text('DeviceID', 0, (_heigth / 2) - 20, {
+        .text('DeviceID', 0, 2, {
           width: doc_width,
           height: 20,
           align: 'center',
           baseline: 'top'
         })
 
+      doc
+        .font(fonts_path.calibri.regular)
+        .fontSize(legenda_size)
+        // .text(text, 0, (_heigth / 2) + 26, {
+        .text(text, 0, _heigth, {
+          width: doc_width,
+          height: 20,
+          align: 'center',
+          baseline: 'bottom'
+        })
+
       //codebar
       doc.font(fonts_path.code128)
         .fontSize(fontSize)
-        .text(encoded_text, 0, doc_heigth / 2, {
+        .text(encoded_text, 0, (_heigth / 2) - 2.5, {
           width: doc_width,
           height: 20,
           align: 'center',
